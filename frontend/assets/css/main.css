@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300..800&family=Sora:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Global layout utilities ───────────────────────────────────────────────── */
+.container-store {
+  width: 100%;
+  max-width: 80rem;   /* 1280px */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .container-store {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-store {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --header-h:   68px;
+  --font-body:  'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-head:  'Sora', system-ui, sans-serif;
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  @apply bg-white text-zinc-900;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-head);
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { @apply bg-zinc-100; }
+::-webkit-scrollbar-thumb { @apply bg-emerald-200 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-emerald-400; }
+
+/* ── Animations ────────────────────────────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-up        { animation: fade-up 0.5s ease both; }
+.animate-fade-in        { animation: fade-in 0.4s ease both; }
+.animate-slide-in-right { animation: slide-in-right 0.35s ease both; }
+
+/* delay helpers */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+
+/* ── Nuxt UI overrides ──────────────────────────────────────────────────────── */
+.focus-visible\:ring-primary-500:focus-visible { --un-ring-color: rgb(16 185 129); }
+
+/* ── Prose (blog content) ──────────────────────────────────────────────────── */
+.prose { @apply text-zinc-700 leading-relaxed; }
+.prose h2 { font-family: var(--font-head); @apply text-2xl font-semibold text-zinc-900 mt-8 mb-3; }
+.prose h3 { font-family: var(--font-head); @apply text-xl font-semibold text-zinc-800 mt-6 mb-2; }
+.prose p  { @apply mb-4; }
+.prose a  { @apply text-emerald-600 underline hover:text-emerald-800 transition-colors; }
+.prose ul { @apply list-disc pl-5 mb-4 space-y-1; }
+.prose ol { @apply list-decimal pl-5 mb-4 space-y-1; }
+.prose strong { @apply font-semibold text-zinc-900; }
+.prose blockquote { @apply border-l-4 border-emerald-400 pl-4 italic text-zinc-500; }

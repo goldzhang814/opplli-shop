@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecom_backend_api
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "9010:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./app/media:/app/app/media   # 这行是对的！
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
