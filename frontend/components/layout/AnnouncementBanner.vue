@@ -24,12 +24,15 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ banners: any[] }>()
+const props = withDefaults(defineProps<{ banners?: any[] }>(), {
+  banners: () => [],
+})
 
 const dismissed = ref<number[]>([])
-const current   = computed(() =>
-  props.banners.find(b => !dismissed.value.includes(b.id))
-)
+const current = computed(() => {
+  const banners = Array.isArray(props.banners) ? props.banners : []
+  return banners.find(b => !dismissed.value.includes(b.id))
+})
 
 function dismiss() {
   if (current.value) dismissed.value.push(current.value.id)
