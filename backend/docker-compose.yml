@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   api:
+    # 原有内容，完全不动
     build:
       context: .
       dockerfile: Dockerfile
@@ -13,5 +14,30 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - ./app/media:/app/app/media   # 这行是对的！
+      - ./app/media:/app/app/media
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  # ✅ 新增 nuxt service
+  nuxt:
+    build:
+      context: ../frontend        # ← 改成你 frontend 目录的实际相对路径
+      dockerfile: Dockerfile
+      args:
+        NUXT_PUBLIC_API_BASE: /api
+        NUXT_PUBLIC_SITE_URL: https://www.opplii.com
+        NUXT_PUBLIC_STRIPE_KEY: ${NUXT_PUBLIC_STRIPE_KEY:-}
+        NUXT_PUBLIC_AIRWALLEX_KEY: ${NUXT_PUBLIC_AIRWALLEX_KEY:-}
+        NUXT_PUBLIC_AIRWALLEX_ENV: ${NUXT_PUBLIC_AIRWALLEX_ENV:-production}
+    container_name: nuxt-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    environment:
+      - API_BASE_URL=http://api:8000   # SSR 走内网
+      - NODE_ENV=production
+
+networks:
+  default:
+    name: ecom_network
