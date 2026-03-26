@@ -32,7 +32,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
           <div v-for="mod in modules" :key="mod" style="display:flex;align-items:center;justify-content:space-between;background:#f9fafb;border-radius:8px;padding:8px 12px">
             <span style="font-size:13px;text-transform:capitalize">{{ mod.replace(/_/g,' ') }}</span>
-            <n-switch :value="perms[mod]" @update:value="v => perms[mod] = v" size="small"/>
+            <n-switch :value="perms[mod]" @update:value="(v: boolean) => perms[mod] = v" size="small"/>
           </div>
         </div>
         <n-space justify="end">
@@ -85,7 +85,7 @@ async function create() {
 
 function openPerms(a: any) {
   permTarget.value = a
-  modules.forEach(m => { perms[m] = !!a.permissions?.[m] })
+  modules.forEach((m: string) => { perms[m] = !!a.permissions?.[m] })
   showPerms.value = true
 }
 

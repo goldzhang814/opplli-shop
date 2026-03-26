@@ -44,7 +44,7 @@
                 <p v-if="s.description" style="font-size:12px; color:#9ca3af; margin-top:4px">{{ s.description }}</p>
                 <n-input
                   :value="s.value || ''"
-                  @update:value="v => updateSettingLocal(s.key, v)"
+                  @update:value="(v: string) => updateSettingLocal(s.key, v)"
                   size="small"
                   style="margin-top:8px"
                 />
@@ -69,7 +69,7 @@
             <n-form-item v-for="c in contactFields" :key="c.key" :label="c.label">
               <n-input
                 :value="contactValues[c.key] || ''"
-                @update:value="v => contactValues[c.key] = v"
+                @update:value="(v: string) => contactValues[c.key] = v"
                 :placeholder="c.placeholder"
               />
             </n-form-item>

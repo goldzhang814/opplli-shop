@@ -168,7 +168,7 @@ const statusColor: Record<string, string> = {
 
 const orderCols = [
   { title: 'Order No.',  key: 'order_no', render: (r: any) => h(RouterLink, { to: `/orders/${r.id}`, style: 'color:#10b981; font-family:monospace; font-size:13px' }, () => r.order_no) },
-  { title: 'Status',     key: 'status',   render: (r: any) => h(NTag, { type: statusColor[r.status] || 'default', size: 'small', round: true }, () => r.status.replace(/_/g, ' ')) },
+  { title: 'Status',     key: 'status',   render: (r: any) => h(NTag, { type: (statusColor[r.status] || 'default') as any, size: 'small', round: true }, () => r.status.replace(/_/g, ' ')) },
   { title: 'Total',      key: 'total_amount', render: (r: any) => `$${r.total_amount.toFixed(2)}` },
   { title: 'Date',       key: 'created_at',  render: (r: any) => dayjs(r.created_at).format('MMM D, HH:mm') },
 ]
