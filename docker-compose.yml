@@ -54,7 +54,7 @@ services:
       dockerfile: Dockerfile
       args:
         # ✅ NUXT_PUBLIC_* 必须构建时注入，运行时改了无效
-        NUXT_PUBLIC_API_BASE: /api
+        NUXT_PUBLIC_API_BASE: ""
         NUXT_PUBLIC_SITE_URL: https://www.opplii.com
         NUXT_PUBLIC_STRIPE_KEY: ${NUXT_PUBLIC_STRIPE_KEY:-}
         NUXT_PUBLIC_AIRWALLEX_KEY: ${NUXT_PUBLIC_AIRWALLEX_KEY:-}
