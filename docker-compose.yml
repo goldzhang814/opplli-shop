@@ -76,7 +76,7 @@ services:
       context: ./admin
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: /api           # ✅ 同样构建时注入
+        VITE_API_URL: ""          # ✅ 同样构建时注入
     container_name: ecom_admin
     restart: unless-stopped
     ports:
