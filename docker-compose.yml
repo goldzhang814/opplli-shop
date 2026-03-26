@@ -10,13 +10,13 @@ services:
     restart: unless-stopped
     env_file: .env
     ports:
-      - "9010:8000"
+      - "9010:9010"
     volumes:
       - ./backend:/app
       - media_local:/app/media
     extra_hosts:
       - "host.docker.internal:host-gateway"   # ✅ 访问宿主机 MySQL/Redis
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn app.main:app --host 0.0.0.0 --port 9010
 
   # ── Celery Worker ───────────────────────────────────────────────
   worker:
@@ -62,12 +62,12 @@ services:
     container_name: ecom_frontend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "9001:9001"
     depends_on:
       - api
     environment:
       # ✅ SSR 服务端走容器内网访问 api，用 service name
-      - API_BASE_URL=http://api:8000
+      - API_BASE_URL=http://api:9010
       - NODE_ENV=production
 
   # ── Vue 3 Admin ─────────────────────────────────────────────────
@@ -80,7 +80,7 @@ services:
     container_name: ecom_admin
     restart: unless-stopped
     ports:
-      - "3001:80"
+      - "9002:9002"
     depends_on:
       - api
 
