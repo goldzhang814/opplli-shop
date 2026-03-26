@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     APP_URL:      str   = "http://localhost:9010"
     FRONTEND_URL: str   = "http://localhost:3000"
     ADMIN_URL:    str   = "http://localhost:3001"
-    CORS_ORIGINS: str   = "http://localhost:3000,http://localhost:3001"
+    CORS_ORIGINS: str   = "http://localhost:3000,http://localhost:3001,https://www.opplii.com,http://www.opplii.com"
 
     # Database
     DATABASE_URL: str = "mysql+aiomysql://root:root@localhost:3306/ecom_db"
