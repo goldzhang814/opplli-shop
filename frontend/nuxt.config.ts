@@ -22,7 +22,7 @@ export default defineNuxtConfig({
     apiBaseUrl: process.env.API_BASE_URL || 'http://api:9010',
     // Exposed to client
     public: {
-      apiBase:        process.env.NUXT_PUBLIC_API_BASE  || 'http://localhost:9010',
+      apiBase:        process.env.NUXT_PUBLIC_API_BASE  ?? '',
       siteUrl:        process.env.NUXT_PUBLIC_SITE_URL  || 'http://localhost:3000',
       stripeKey:      process.env.NUXT_PUBLIC_STRIPE_KEY || '',
       airwallexKey:   process.env.NUXT_PUBLIC_AIRWALLEX_KEY || '',
