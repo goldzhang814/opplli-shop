@@ -80,7 +80,7 @@ services:
     container_name: ecom_admin
     restart: unless-stopped
     ports:
-      - "9002:9002"
+      - "9002:80"
     depends_on:
       - api
 
