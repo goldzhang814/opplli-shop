@@ -83,7 +83,10 @@ class ProductSku(Base, TimestampMixin):
     weight_grams:   Mapped[Optional[int]]  = mapped_column(Integer, nullable=True)
 
     product:        Mapped["Product"]           = relationship(back_populates="skus")
-    inventory_logs: Mapped[list["InventoryLog"]]= relationship(back_populates="sku")
+    inventory_logs: Mapped[list["InventoryLog"]]= relationship(
+        back_populates="sku",
+        passive_deletes=True,
+    )
     order_items:    Mapped[list["OrderItem"]]   = relationship(back_populates="sku")
 
 

@@ -415,8 +415,9 @@ function generateSkus() {
     const autoCode = combo.join('-').toUpperCase().replace(/\s+/g, '')
 
     return {
-      sku_code:            existing?.sku_code            || autoCode,
-      price:               existing?.price               || 0,
+      id:       existing?.id || undefined,  // ← 加这一行
+      sku_code: existing?.sku_code || autoCode,
+      price:    existing?.price    || 0,
       compare_price:       existing?.compare_price       || null,
       stock:               existing?.stock               || 0,
       low_stock_threshold: existing?.low_stock_threshold || 5,
@@ -528,12 +529,43 @@ async function save() {
 
     if (isEdit.value) {
       await api.updateProduct(productId.value, form)
+
+    // 1. 当前界面上的 SKU id 集合（有 id 说明是已存在的）
+    const currentIds = new Set(
+      skus.value.filter((s: any) => s.id).map((s: any) => s.id)
+    )
+
+    // 2. 数据库里原有的 SKU id 集合
+    const { data: existingProduct } = await api.product(productId.value)
+    const dbIds = new Set((existingProduct.skus || []).map((s: any) => s.id))
+
+    // 3. 数据库有、界面没有 → 删除
+    for (const dbId of dbIds) {
+      if (!currentIds.has(dbId)) {
+        try {
+          await api.deleteSku(productId.value, dbId)
+        } catch (e: any) {
+          message.error(`Update SKU failed: ${e?.response?.data?.detail || e.message}`)
+          return // 直接退出 save()
+        }
+      }
+    }
+
       // Sync SKUs: update existing, create new
       for (const sku of skuData) {
-        const existing = (sku as any).id
-        existing
-          ? await api.updateSku(productId.value, existing, sku).catch(() => {})
-          : await api.createSku(productId.value, sku).catch(() => {})
+        const skuId = (sku as any).id
+        if (skuId) {
+          // 已有 SKU → update
+          const { id, ...updatePayload } = sku as any
+          await api.updateSku(productId.value, skuId, updatePayload).catch((e: any) => {
+            message.error(`Update SKU failed: ${e?.response?.data?.detail || e.message}`)
+          })
+        } else {
+          // 新 SKU → create
+          await api.createSku(productId.value, sku).catch((e: any) => {
+            message.error(`Create SKU failed: ${e?.response?.data?.detail || e.message}`)
+          })
+        }
       }
       message.success('Saved!')
     } else {
