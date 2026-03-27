@@ -39,7 +39,14 @@
               <n-input v-model:value="form.short_desc" type="textarea" :rows="2"/>
             </n-form-item>
             <n-form-item label="Full Description">
-              <n-input v-model:value="form.description" type="textarea" :rows="8" placeholder="HTML content or plain text"/>
+              <div class="rt-editor">
+                <Toolbar :editor="editorRef" :defaultConfig="toolbarConfig" />
+                <Editor
+                  v-model="descHtml"
+                  :defaultConfig="editorConfig"
+                  @onCreated="handleEditorCreated"
+                />
+              </div>
             </n-form-item>
           </n-form>
         </n-card>
@@ -297,10 +304,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, h } from 'vue'
+import { ref, reactive, computed, onMounted, h, watch, shallowRef, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import { ArrowBackOutline, AddOutline, TrashOutline } from '@vicons/ionicons5'
+import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
+import '@wangeditor/editor/dist/css/style.css'
 import { api, errMsg } from '@/composables/useApi'
 
 const route   = useRoute()
@@ -340,6 +349,53 @@ function autoSlug() {
     form.slug = form.name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-')
   }
 }
+
+// Rich text editor: Full Description
+const editorRef = shallowRef()
+const descHtml = ref('')
+
+const toolbarConfig = {}
+const editorConfig = {
+  placeholder: 'Write product details...',
+  MENU_CONF: {
+    uploadImage: {
+      customUpload: async (file: File, insertFn: (url: string, alt?: string, href?: string) => void) => {
+        if (!isEdit.value) {
+          message.warning('Save product first, then upload images.')
+          return
+        }
+        try {
+          const fd = new FormData()
+          fd.append('file', file)
+          fd.append('alt_text', file.name.replace(/\.[^.]+$/, ''))
+          const { data } = await api.uploadImage(productId.value, fd)
+          insertFn(data.url, data.alt_text || file.name)
+        } catch (e) {
+          message.error(errMsg(e))
+        }
+      },
+    },
+  },
+}
+
+function handleEditorCreated(editor: any) {
+  editorRef.value = editor
+}
+
+watch(descHtml, (val) => {
+  form.description = val
+})
+
+watch(
+  () => form.description,
+  (val) => {
+    if (val !== descHtml.value) descHtml.value = val || ''
+  }
+)
+
+onBeforeUnmount(() => {
+  if (editorRef.value) editorRef.value.destroy()
+})
 
 // ── Variant axes ──────────────────────────────────────────────────────────────
 interface Axis { name: string; values: string[] }
@@ -524,32 +580,33 @@ async function save() {
   try {
     const skuData = skus.value.map(({ id, ...s }) => ({
       ...s,
-      sku_code: s.sku_code || `${form.name.slice(0,8).toUpperCase().replace(/\s/g,'-')}-${Math.random().toString(36).slice(2,6).toUpperCase()}`,
+     id:id, sku_code: s.sku_code || `${form.name.slice(0,8).toUpperCase().replace(/\s/g,'-')}-${Math.random().toString(36).slice(2,6).toUpperCase()}`,
     }))
+    //console.log(skuData)
 
     if (isEdit.value) {
       await api.updateProduct(productId.value, form)
 
-    // 1. 当前界面上的 SKU id 集合（有 id 说明是已存在的）
-    const currentIds = new Set(
-      skus.value.filter((s: any) => s.id).map((s: any) => s.id)
-    )
+      // 1. 当前界面上的 SKU id 集合（有 id 说明是已存在的）
+      const currentIds = new Set(
+        skus.value.filter((s: any) => s.id).map((s: any) => s.id)
+      )
 
-    // 2. 数据库里原有的 SKU id 集合
-    const { data: existingProduct } = await api.product(productId.value)
-    const dbIds = new Set((existingProduct.skus || []).map((s: any) => s.id))
+      // 2. 数据库里原有的 SKU id 集合
+      const { data: existingProduct } = await api.product(productId.value)
+      const dbIds = new Set((existingProduct.skus || []).map((s: any) => s.id))
 
-    // 3. 数据库有、界面没有 → 删除
-    for (const dbId of dbIds) {
-      if (!currentIds.has(dbId)) {
-        try {
-          await api.deleteSku(productId.value, dbId)
-        } catch (e: any) {
-          message.error(`Update SKU failed: ${e?.response?.data?.detail || e.message}`)
-          return // 直接退出 save()
+      // 3. 数据库有、界面没有 → 删除
+      for (const dbId of dbIds) {
+        if (!currentIds.has(dbId)) {
+          try {
+            await api.deleteSku(productId.value, dbId)
+          } catch (e: any) {
+            message.error(`Update SKU failed: ${e?.response?.data?.detail || e.message}`)
+            return // 直接退出 save()
+          }
         }
       }
-    }
 
       // Sync SKUs: update existing, create new
       for (const sku of skuData) {
@@ -588,6 +645,7 @@ onMounted(async () => {
       is_published: data.is_published, seo_title: data.seo_title || '',
       seo_description: data.seo_description || '',
     })
+    descHtml.value = data.description || ''
     if (data.skus?.length) {
       skus.value = data.skus.map((s: any) => ({ ...s, variant_attrs: s.variant_attrs || null }))
       // Reconstruct axes from existing SKU attrs
@@ -635,6 +693,20 @@ onMounted(async () => {
 .tag-input {
   border:none; outline:none; background:transparent;
   font-size:13px; color:#374151; min-width:80px; flex:1; padding:2px 4px;
+}
+
+.rt-editor {
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  overflow:hidden;
+  background:#fff;
+}
+.rt-editor :deep(.w-e-toolbar) {
+  border-bottom:1px solid #eef2f7;
+  background:#f9fafb;
+}
+.rt-editor :deep(.w-e-text-container) {
+  min-height:260px;
 }
 
 .sku-table { width:100%; border-collapse:collapse; font-size:13px; }
