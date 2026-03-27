@@ -594,7 +594,7 @@ async function save() {
 
       // 2. 数据库里原有的 SKU id 集合
       const { data: existingProduct } = await api.product(productId.value)
-      const dbIds = new Set((existingProduct.skus || []).map((s: any) => s.id))
+      const dbIds = new Set<number>((existingProduct.skus || []).map((s: any) => Number(s.id)))
 
       // 3. 数据库有、界面没有 → 删除
       for (const dbId of dbIds) {
