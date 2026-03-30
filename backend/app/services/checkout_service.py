@@ -142,11 +142,11 @@ async def place_order(
     coupon_id       = None
     discount_amount = 0.0
     free_ship_coupon= False
-    if req.coupon_code:
-        coupon_val = await coupon_service.validate_coupon(db, req.coupon_code, 0)  # subtotal TBD
-        if not coupon_val.valid:
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                f"Coupon error: {coupon_val.message}")
+    # if req.coupon_code:
+    #     coupon_val = await coupon_service.validate_coupon(db, req.coupon_code, 0)  # subtotal TBD
+    #     if not coupon_val.valid:
+    #         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,
+    #                             f"Coupon error: {coupon_val.message}")
 
     # ── Step 3: Load SKUs with SELECT FOR UPDATE (lock rows) ─────────────────
     sku_ids = [int(k) for k in raw.keys()]
@@ -173,6 +173,12 @@ async def place_order(
 
     # ── Step 5: Calculate totals ──────────────────────────────────────────────
     subtotal = round(sum(float(skus[int(k)].price) * qty for k, qty in raw.items()), 2)
+
+    if req.coupon_code:
+        coupon_val = await coupon_service.validate_coupon(db, req.coupon_code, subtotal)  # subtotal TBD
+        if not coupon_val.valid:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                f"Coupon error: {coupon_val.message}")
 
     # Re-validate coupon with real subtotal
     if req.coupon_code:
