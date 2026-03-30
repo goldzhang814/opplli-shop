@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { ref, onMounted, h } from 'vue'
 import { useRouter } from 'vue-router'
-import { NTag, NButton, NIcon, NSpace, useMessage, useDialog } from 'naive-ui'
+import { NTag, NButton, NIcon, NSpace, NSelect, useMessage, useDialog } from 'naive-ui'
 import { SearchOutline, RefreshOutline, EyeOutline, CarOutline } from '@vicons/ionicons5'
 import { api, errMsg } from '@/composables/useApi'
 import { useDebounceFn } from '@vueuse/core'
@@ -85,6 +85,8 @@ const loading = ref(false)
 const search  = ref('')
 const statusFilter  = ref<string | null>(null)
 const paymentFilter = ref<string | null>(null)
+const carrierOptions = ref<Array<{ label: string; value: number }>>([])
+const carriersLoading = ref(false)
 
 const statusOptions = [
   { label: 'Pending Payment',  value: 'pending_payment' },
@@ -121,10 +123,27 @@ async function load() {
   finally { loading.value = false }
 }
 
+async function loadCarriers() {
+  if (carrierOptions.value.length || carriersLoading.value) return
+  carriersLoading.value = true
+  try {
+    const { data } = await api.carriers()
+    carrierOptions.value = (data || []).map((c: any) => ({
+      label: c.name,
+      value: c.id,
+    }))
+  } catch (e: any) {
+    message.error(errMsg(e))
+  } finally {
+    carriersLoading.value = false
+  }
+}
+
 const debouncedLoad = useDebounceFn(load, 400)
 onMounted(load)
 
 const columns = [
+  { title: 'Id', key: 'id', width: 70 },
   {
     title: 'Order No.',
     key:   'order_no',
@@ -178,19 +197,33 @@ const columns = [
 ]
 
 function openShipDialog(order: any) {
-  let carrierId = ''
-  let trackingNo = ''
+  const carrierId = ref<number | null>(null)
+  const trackingNo = ref('')
+  loadCarriers()
   dialog.create({
     title: `Ship Order ${order.order_no}`,
     content: () => h('div', { style: 'display:flex; flex-direction:column; gap:12px; margin-top:12px' }, [
-      h('input', { placeholder: 'Carrier ID (e.g. 1)', type: 'number', style: 'padding:8px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px', onInput: (e: any) => carrierId = e.target.value }),
-      h('input', { placeholder: 'Tracking Number', style: 'padding:8px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px', onInput: (e: any) => trackingNo = e.target.value }),
+      h(NSelect, {
+        placeholder: 'Select carrier',
+        options: carrierOptions.value,
+        loading: carriersLoading.value,
+        value: carrierId.value,
+        onUpdateValue: (v: number | null) => { carrierId.value = v },
+        filterable: true,
+        clearable: true,
+        style: 'width:100%',
+      }),
+      h('input', { placeholder: 'Tracking Number', style: 'padding:8px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px', onInput: (e: any) => { trackingNo.value = e.target.value } }),
     ]),
     positiveText: 'Mark Shipped',
     negativeText: 'Cancel',
     onPositiveClick: async () => {
+      if (!carrierId.value) {
+        message.error('Please select a carrier.')
+        return false
+      }
       try {
-        await api.shipOrder(order.id, { carrier_id: Number(carrierId), tracking_no: trackingNo })
+        await api.shipOrder(order.id, { carrier_id: carrierId.value, tracking_no: trackingNo.value })
         message.success('Order shipped!')
         load()
       } catch (e) { message.error(errMsg(e)) }

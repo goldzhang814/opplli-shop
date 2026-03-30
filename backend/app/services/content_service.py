@@ -166,7 +166,8 @@ async def list_blog_posts(
     category_id:  Optional[int] = None,
     published_only: bool        = True,
 ) -> dict:
-    q = select(BlogPost).order_by(BlogPost.published_at.desc().nullslast())
+    #q = select(BlogPost).order_by(BlogPost.published_at.desc().nullslast())
+    q = select(BlogPost).order_by(BlogPost.published_at.desc())
     if published_only:
         q = q.where(BlogPost.is_published == True)
     if category_id:

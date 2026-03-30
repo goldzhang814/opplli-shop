@@ -49,6 +49,9 @@ export const api = {
   refundOrder:     (id: number, data: object)            => http.post(`/admin/orders/${id}/refund`, data),
   webhooks:        (p?: object)                          => http.get('/admin/webhooks', { params: p }),
 
+  // Users
+  users:           (p?: object)                          => http.get('/admin/users', { params: p }),
+
   // Products
   products:        (p?: object)                          => http.get('/admin/products', { params: p }),
   product:         (id: number)                          => http.get(`/admin/products/${id}`),

@@ -53,6 +53,7 @@ from app.routers.admin import products as admin_products
 from app.routers.admin import shipping as admin_shipping
 from app.routers.admin import orders as admin_orders
 from app.routers.admin import content as admin_content
+from app.routers.admin import users as admin_users
 
 app.include_router(auth.router,           prefix="/api/v1")
 app.include_router(products.router,       prefix="/api/v1")
@@ -64,6 +65,7 @@ app.include_router(admin_products.router, prefix="/api/v1")
 app.include_router(admin_shipping.router, prefix="/api/v1")
 app.include_router(admin_orders.router,   prefix="/api/v1")
 app.include_router(admin_content.router,  prefix="/api/v1")
+app.include_router(admin_users.router,    prefix="/api/v1")
 
 
 @app.get("/api/health", tags=["Health"])

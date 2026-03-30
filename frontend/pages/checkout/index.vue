@@ -537,6 +537,7 @@ async function applyCoupon() {
     }) as any
     if (res.valid) {
       appliedCoupon.value = res
+      await refreshPreview(appliedCoupon.value?.code)
       toast.add({ title: t('checkout.couponApplied'), color: 'green' })
     } else {
       couponError.value = res.message
@@ -545,10 +546,22 @@ async function applyCoupon() {
   finally { couponLoading.value = false }
 }
 
-function removeCoupon() {
+async function removeCoupon() {
   appliedCoupon.value = null
   couponCode.value    = ''
   couponError.value   = ''
+  await refreshPreview()
+}
+
+async function refreshPreview(couponCode?: string | null) {
+  try {
+    preview.value = await api.checkoutPreview({
+      address:     { ...address },
+      coupon_code: couponCode || undefined,
+    })
+  } catch (e: any) {
+    toast.add({ title: e?.data?.detail || t('common.error'), color: 'red' })
+  }
 }
 
 // ── Validate address ──────────────────────────────────────────────────────

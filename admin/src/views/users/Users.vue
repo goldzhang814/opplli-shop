@@ -37,11 +37,12 @@ const search  = ref('')
 async function load() {
   loading.value = true
   try {
-    const { data } = await api.orders({ page: page.value, search: search.value || undefined })
-    // Use user list endpoint - fall back to showing from orders
-    users.value = data.items?.map((o: any) => ({ id: o.user_id, email: o.guest_email, created_at: o.created_at, is_active: true })) || []
+    const { data } = await api.users({ page: page.value, search: search.value || undefined })
+    users.value = data.items || []
     total.value = data.total || 0
-  } catch { /* silent */ }
+  } catch (e: any) {
+    message.error(errMsg(e))
+  }
   finally { loading.value = false }
 }
 
@@ -49,7 +50,10 @@ const debouncedLoad = useDebounceFn(load, 400)
 onMounted(load)
 
 const columns = [
+  { title: 'ID',   key: 'id',      render: (r: any) => h('span', { style: 'font-size:13px' }, r.id || '—') },
   { title: 'Email',   key: 'email',      render: (r: any) => h('span', { style: 'font-size:13px' }, r.email || '—') },
+  { title: 'Fullname',   key: 'full_name',      render: (r: any) => h('span', { style: 'font-size:13px' }, r.full_name || '—') },
+  { title: 'LanguageCode',   key: 'language_code',      render: (r: any) => h('span', { style: 'font-size:13px' }, r.language_code || '—') },
   { title: 'Joined',  key: 'created_at', render: (r: any) => dayjs(r.created_at).format('MMM D, YYYY'), width: 130 },
   {
     title: 'Status',

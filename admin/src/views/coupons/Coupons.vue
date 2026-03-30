@@ -145,41 +145,42 @@ async function deleteCoupon(id: number) {
 }
 
 const columns = [
+  { title: 'Id', key: 'id', width: 120 },
   {
     title: 'Code',
     key: 'code',
     render: (r: any) => h('code', { style: 'background:#f0fdf4; color:#059669; padding:2px 8px; border-radius:6px; font-size:12px; font-weight:700' }, r.code),
-  },
+  width: 150},
   { title: 'Type', key: 'type', render: (r: any) => r.type.replace(/_/g, ' '), width: 120 },
   {
     title: 'Value',
     key: 'value',
     render: (r: any) => r.type === 'percent' ? `${r.value}%` : r.type === 'fixed' ? `$${r.value}` : 'Free ship',
-    width: 90,
+    width: 150,
   },
   { title: 'Min Order', key: 'min_order_amount', render: (r: any) => r.min_order_amount ? `$${r.min_order_amount}` : '—', width: 100 },
   {
     title: 'Usage',
     key: 'used_count',
     render: (r: any) => `${r.used_count} / ${r.max_uses ?? '∞'}`,
-    width: 80,
+    width: 150,
   },
   {
     title: 'Expires',
     key: 'ends_at',
     render: (r: any) => r.ends_at ? dayjs(r.ends_at).format('MMM D, YYYY') : 'Never',
-    width: 120,
+    width: 150,
   },
   {
     title: 'Active',
     key: 'is_active',
     render: (r: any) => h(NTag, { type: r.is_active ? 'success' : 'default', size: 'small', round: true }, () => r.is_active ? 'Active' : 'Off'),
-    width: 80,
+    width: 150,
   },
   {
     title: 'Actions',
     key: '_a',
-    width: 80,
+    width: 150,
     render: (r: any) => h(NSpace, { size: 'small' }, () => [
       h(NButton, { size: 'tiny', quaternary: true, onClick: () => openForm(r) }, { default: () => h(NIcon, { component: CreateOutline }) }),
       h(NButton, { size: 'tiny', quaternary: true, type: 'error', onClick: () => deleteCoupon(r.id) }, { default: () => h(NIcon, { component: TrashOutline }) }),
