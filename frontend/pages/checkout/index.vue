@@ -48,6 +48,7 @@
                 {{ $t('checkout.orSignIn') }}
               </UButton>
             </div>
+            <p v-if="guestEmailError" class="text-xs text-red-500 mt-1">{{ guestEmailError }}</p>
           </div>
 
           <!-- Saved addresses selector (logged-in users only) -->
@@ -423,6 +424,9 @@ function clearAddress() {
 // ── Step state ────────────────────────────────────────────────────────────────
 const step          = ref(0)
 const guestEmail    = ref('')
+const guestEmailError = ref('')
+const guestAuthInFlight = ref(false)
+const guestAuthEmail = ref('')
 const saveAddress   = ref(auth.isLoggedIn)
 const paymentMethod = ref<'stripe' | 'paypal' | 'airwallex'>('stripe')
 const couponCode    = ref('')
@@ -505,6 +509,29 @@ const fetchShippingEstimate = useDebounceFn(async () => {
 
 watch(() => [address.state_code, address.state_name], fetchShippingEstimate)
 
+watch(guestEmail, () => {
+  if (guestEmail.value) guestEmailError.value = ''
+})
+
+const debouncedGuestAuth = useDebounceFn(async () => {
+  if (auth.token) return
+  if (!guestEmail.value) return
+  if (guestAuthInFlight.value) return
+  if (guestAuthEmail.value === guestEmail.value) return
+  guestAuthInFlight.value = true
+  const ok = await ensureGuestAuth()
+  if (ok) guestAuthEmail.value = guestEmail.value
+  guestAuthInFlight.value = false
+}, 600)
+
+watch(guestEmail, (val) => {
+  if (guestAuthEmail.value && val && val !== guestAuthEmail.value) {
+    auth.logout()
+    guestAuthEmail.value = ''
+  }
+  debouncedGuestAuth()
+})
+
 watch(paymentMethod, () => {
   stripeClientSecret.value = ''
   stripeError.value = ''
@@ -583,13 +610,17 @@ const steps = computed(() => [
 ])
 
 const paymentMethods: Array<{ value: 'stripe' | 'paypal' | 'airwallex'; icon: string; label: string }> = [
-  { value: 'stripe',    icon: '💳', label: 'Card' },
+  // { value: 'stripe',    icon: '💳', label: 'Card' }, todo等待开放
   { value: 'paypal',    icon: '🅿️',  label: 'PayPal' },
   { value: 'airwallex', icon: '🌐', label: 'Airwallex' },
 ]
 
 async function goToPayment() {
   if (!validateAddress()) return
+  if (!auth.token) {
+    const ok = await ensureGuestAuth()
+    if (!ok) return
+  }
   previewLoading.value = true
   try {
     preview.value = await api.checkoutPreview({
@@ -608,8 +639,33 @@ async function goToPayment() {
   }
 }
 
+async function ensureGuestAuth(): Promise<boolean> {
+  if (auth.token) return true
+  if (!guestEmail.value) {
+    guestEmailError.value = 'Email is required for guest checkout.'
+    toast.add({ title: guestEmailError.value, color: 'red' })
+    return false
+  }
+  guestEmailError.value = ''
+  try {
+    const res = await api.guestCheckout({ email: guestEmail.value }) as any
+    auth.setToken(res.access_token)
+    const user = await api.me() as any
+    auth.setUser(user)
+    return true
+  } catch (e: any) {
+    const msg = e?.data?.detail || e?.message || t('common.error')
+    toast.add({ title: msg, color: 'red' })
+    return false
+  }
+}
+
 async function placeOrder() {
   if (!agreedTerms.value) return
+  if (!auth.token) {
+    const ok = await ensureGuestAuth()
+    if (!ok) return
+  }
   placingOrder.value = true
   try {
     stripeClientSecret.value = ''
