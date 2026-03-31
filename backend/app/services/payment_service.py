@@ -32,6 +32,9 @@ from app.config import settings
 from app.models.payment import Payment, Refund, PaymentWebhook
 from app.models.order import Order, OrderStatusLog
 
+import logging
+logger = logging.getLogger("app.webhook")
+
 # Configure Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -401,8 +404,22 @@ def _awx_verify_signature(payload: bytes, signature: str) -> bool:
     return hmac.compare_digest(expected, signature)
 
 
-async def handle_airwallex_webhook(db: AsyncSession, payload: bytes, headers: dict) -> None:
-    sig = headers.get("x-signature", "")
+def _normalize_headers(headers: object) -> dict[str, str]:
+    try:
+        items = headers.items()
+    except Exception:
+        return {}
+    return {str(k).lower(): str(v) for k, v in items}
+
+
+async def handle_airwallex_webhook(db: AsyncSession, payload: bytes, headers: object) -> None:
+    hdrs = _normalize_headers(headers)
+
+    logger.info("airwallex webhook received")
+    logger.info("headers keys=%s", list(hdrs.keys()))
+    logger.info("payload=%s", payload.decode("utf-8", errors="ignore"))
+
+    sig = hdrs.get("x-signature", "")
     if settings.AIRWALLEX_WEBHOOK_SECRET and not _awx_verify_signature(payload, sig):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid Airwallex signature")
 

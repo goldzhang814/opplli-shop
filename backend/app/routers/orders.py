@@ -150,6 +150,5 @@ async def airwallex_webhook(
     db:      AsyncSession = Depends(get_db),
 ):
     payload = await request.body()
-    headers = dict(request.headers)
-    await payment_service.handle_airwallex_webhook(db, payload, headers)
+    await payment_service.handle_airwallex_webhook(db, payload, request.headers)
     return {"received": True}

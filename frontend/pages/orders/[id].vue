@@ -1,5 +1,13 @@
 <template>
   <div class="container-store py-10 max-w-3xl">
+    <div v-if="auth.isGuest" class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3">
+      <UIcon name="i-heroicons-information-circle" class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-amber-800">You are viewing orders as a guest.</p>
+        <p class="text-xs text-amber-700 mt-0.5">Set a password to keep access to your order history.</p>
+      </div>
+      <UButton size="sm" color="amber" :to="registerLink">Set Password</UButton>
+    </div>
     <!-- Success banner -->
     <div v-if="route.query.success" class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 mb-6 flex gap-3">
       <UIcon name="i-heroicons-check-circle" class="w-6 h-6 text-emerald-500 flex-shrink-0 mt-0.5" />
@@ -134,10 +142,11 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'auth-or-guest' })
 
 const route   = useRoute()
 const { t }   = useI18n()
+const auth    = useAuthStore()
 const api     = useApi()
 const toast   = useToast()
 
@@ -150,6 +159,10 @@ const { data: order, pending: loading, refresh } = await useAsyncData(
 
 const cancelling = ref(false)
 const refunding  = ref(false)
+const registerLink = computed(() => {
+  const email = auth.user?.email
+  return email ? `/auth/register?email=${encodeURIComponent(email)}` : '/auth/register'
+})
 
 async function cancelOrder() {
   cancelling.value = true

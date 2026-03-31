@@ -42,6 +42,14 @@ async def _get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
 async def register(db: AsyncSession, req: RegisterRequest) -> dict:
     existing = await _get_user_by_email(db, req.email)
     if existing:
+        if existing.is_guest:
+            existing.password_hash = hash_password(req.password)
+            existing.is_guest      = False
+            existing.is_active     = True
+            existing.agree_terms   = True
+            existing.agreed_at     = datetime.now(timezone.utc)
+            existing.language_code = req.language_code
+            return _token_response(existing, is_new=False)
         raise HTTPException(status.HTTP_409_CONFLICT, "Email already registered")
 
     user = User(

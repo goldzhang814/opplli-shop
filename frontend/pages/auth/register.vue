@@ -58,6 +58,7 @@
 definePageMeta({ layout: 'auth' })
 
 const { t } = useI18n()
+const route  = useRoute()
 const auth   = useAuthStore()
 const api    = useApi()
 const toast  = useToast()
@@ -77,6 +78,15 @@ const langOptions = [
   { value: 'en', label: 'English' },
   { value: 'es', label: 'Español' },
 ]
+
+onMounted(() => {
+  const q = route.query.email
+  if (!form.email && typeof q === 'string') {
+    form.email = q
+  } else if (!form.email && auth.user?.email) {
+    form.email = auth.user.email
+  }
+})
 
 async function submit() {
   Object.keys(errors).forEach(k => (errors as any)[k] = '')

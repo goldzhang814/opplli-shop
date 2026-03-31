@@ -1,5 +1,13 @@
 <template>
   <div class="container-store py-10 max-w-3xl">
+    <div v-if="auth.isGuest" class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3">
+      <UIcon name="i-heroicons-information-circle" class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-amber-800">You are viewing orders as a guest.</p>
+        <p class="text-xs text-amber-700 mt-0.5">Set a password to keep access to your order history.</p>
+      </div>
+      <UButton size="sm" color="amber" :to="registerLink">Set Password</UButton>
+    </div>
     <h1 class="font-head text-3xl font-bold text-zinc-900 mb-8">{{ $t('order.title') }}</h1>
 
     <div v-if="loading" class="space-y-4">
@@ -45,11 +53,16 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'auth-or-guest' })
 
 const { t }    = useI18n()
+const auth     = useAuthStore()
 const api      = useApi()
 const page     = ref(1)
+const registerLink = computed(() => {
+  const email = auth.user?.email
+  return email ? `/auth/register?email=${encodeURIComponent(email)}` : '/auth/register'
+})
 
 useHead({ title: `My Orders — MyStore` })
 
