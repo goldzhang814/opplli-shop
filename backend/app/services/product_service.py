@@ -25,6 +25,7 @@ from app.schemas.product import (
     ProductCreate, ProductUpdate,
     SkuCreate, SkuUpdate,
     InventoryAdjust, ReviewSubmit, ReviewModerate,
+    ProductImageOut,
 )
 from app.core.storage import upload_file, resolve_url, delete_file, ALLOWED_IMAGE_MIMES, ALLOWED_VIDEO_MIMES
 from slugify import slugify
@@ -44,15 +45,15 @@ async def _get_auto_approve_threshold(db: AsyncSession) -> int:
         return 3
 
 
-def _resolve_images(images: list[ProductImage]) -> list[dict]:
+def _resolve_images(images: list[ProductImage]) -> list[ProductImageOut]:
     return [
-        {
-            "id":           img.id,
-            "url":          resolve_url(img.url, img.storage_type),
-            "alt_text":     img.alt_text,
-            "sort_order":   img.sort_order,
-            "storage_type": img.storage_type,
-        }
+        ProductImageOut(
+            id=img.id,
+            url=resolve_url(img.url, img.storage_type),
+            alt_text=img.alt_text,
+            sort_order=img.sort_order,
+            storage_type=img.storage_type,
+        )
         for img in images
     ]
 
