@@ -390,10 +390,14 @@ async def airwallex_create_payment_intent(
     }
 
 
-def _awx_verify_signature(payload: bytes, signature: str) -> bool:
+def _awx_verify_signature(payload: bytes, signature: str, timestamp: str) -> bool:
+    secret = (settings.AIRWALLEX_WEBHOOK_SECRET or "").strip()
+    if not secret or not signature or not timestamp:
+        return False
+    message = timestamp.encode("utf-8") + payload
     expected = hmac.new(
-        settings.AIRWALLEX_WEBHOOK_SECRET.encode(),
-        payload,
+        secret.encode("utf-8"),
+        message,
         hashlib.sha256,
     ).hexdigest()
     return hmac.compare_digest(expected, signature)
@@ -410,13 +414,14 @@ def _normalize_headers(headers: object) -> dict[str, str]:
 async def handle_airwallex_webhook(db: AsyncSession, payload: bytes, headers: object) -> None:
     hdrs = _normalize_headers(headers)
     sig = hdrs.get("x-signature", "")
+    ts  = hdrs.get("x-timestamp", "")
 
     logger.info(
         "airwallex webhook received headers=%s signature_present=%s payload_len=%s",
         list(hdrs.keys()), bool(sig), len(payload),
     )
 
-    if settings.AIRWALLEX_WEBHOOK_SECRET and not _awx_verify_signature(payload, sig):
+    if settings.AIRWALLEX_WEBHOOK_SECRET and not _awx_verify_signature(payload, sig, ts):
         logger.warning("airwallex webhook signature invalid")
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid Airwallex signature")
 
