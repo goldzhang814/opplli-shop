@@ -409,13 +409,13 @@ def _normalize_headers(headers: object) -> dict[str, str]:
 
 async def handle_airwallex_webhook(db: AsyncSession, payload: bytes, headers: object) -> None:
     hdrs = _normalize_headers(headers)
+    sig = hdrs.get("x-signature", "")
 
     logger.info(
         "airwallex webhook received headers=%s signature_present=%s payload_len=%s",
         list(hdrs.keys()), bool(sig), len(payload),
     )
 
-    sig = hdrs.get("x-signature", "")
     if settings.AIRWALLEX_WEBHOOK_SECRET and not _awx_verify_signature(payload, sig):
         logger.warning("airwallex webhook signature invalid")
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid Airwallex signature")
