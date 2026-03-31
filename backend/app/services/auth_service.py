@@ -12,7 +12,7 @@ from typing import Optional
 
 import httpx
 from fastapi import HTTPException, status
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -32,28 +32,34 @@ def _token_response(user: User, is_new: bool = False) -> dict:
     return {"access_token": token, "token_type": "bearer",
             "expires_in": expires, "is_new_user": is_new}
 
+def _normalize_email(email: str) -> str:
+    return email.strip().lower()
+
 
 async def _get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
-    r = await db.execute(select(User).where(User.email == email))
+    norm = _normalize_email(email)
+    r = await db.execute(select(User).where(func.lower(User.email) == norm))
     return r.scalar_one_or_none()
 
 
 # ── Register ──────────────────────────────────────────────────────────────────
 async def register(db: AsyncSession, req: RegisterRequest) -> dict:
-    existing = await _get_user_by_email(db, req.email)
+    email = _normalize_email(req.email)
+    existing = await _get_user_by_email(db, email)
     if existing:
-        if existing.is_guest:
-            existing.password_hash = hash_password(req.password)
-            existing.is_guest      = False
-            existing.is_active     = True
-            existing.agree_terms   = True
-            existing.agreed_at     = datetime.now(timezone.utc)
-            existing.language_code = req.language_code
-            return _token_response(existing, is_new=False)
-        raise HTTPException(status.HTTP_409_CONFLICT, "Email already registered")
+        if not existing.is_guest:
+            raise HTTPException(status.HTTP_409_CONFLICT, "Email already registered")
+        existing.password_hash = hash_password(req.password)
+        existing.is_guest      = False
+        existing.is_active     = True
+        existing.agree_terms   = True
+        existing.agreed_at     = datetime.now(timezone.utc)
+        existing.language_code = req.language_code
+        existing.email         = email
+        return _token_response(existing, is_new=False)
 
     user = User(
-        email         = req.email,
+        email         = email,
         password_hash = hash_password(req.password),
         language_code = req.language_code,
         agree_terms   = True,
@@ -85,23 +91,26 @@ async def get_or_create_guest(db: AsyncSession, req: GuestCheckoutRequest) -> di
     Returns a JWT for the guest user (creates if not exists).
     Frontend stores this token and sends it as X-Guest-Token header.
     """
-    user = await _get_user_by_email(db, req.email)
+    email = _normalize_email(req.email)
+    user = await _get_user_by_email(db, email)
     if user and not user.is_guest:
         # Real user already exists — let them know to log in
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             "An account with this email exists. Please sign in.",
         )
-    if not user:
-        user = User(
-            email      = req.email,
+    if user:
+        return _token_response(user, is_new=False)
+
+    user = User(
+            email      = email,
             is_guest   = True,
             is_active  = True,
             role       = "customer",
             agree_terms= False,
         )
-        db.add(user)
-        await db.flush()
+    db.add(user)
+    await db.flush()
     return _token_response(user, is_new=True)
 
 
@@ -266,6 +275,7 @@ async def _oauth_upsert(
         return _token_response(user, is_new=False)
 
     # 2. Try to find user by email (auto-link)
+    email = _normalize_email(email)
     user = await _get_user_by_email(db, email)
     is_new = False
 
@@ -292,6 +302,7 @@ async def _oauth_upsert(
         user.agreed_at  = datetime.now(timezone.utc)
         if full_name and not user.full_name:
             user.full_name = full_name
+        user.email = email
 
     # 3. Create OAuth account record
     new_oauth = OAuthAccount(
