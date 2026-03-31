@@ -33,7 +33,7 @@ from app.models.payment import Payment, Refund, PaymentWebhook
 from app.models.order import Order, OrderStatusLog
 
 import logging
-logger = logging.getLogger("app.webhook")
+logger = logging.getLogger("uvicorn.error")
 
 # Configure Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -312,11 +312,6 @@ async def _awx_access_token() -> str:
         if settings.AIRWALLEX_ENV == "prod"
         else "https://api-demo.airwallex.com"
     )
-    print("********************************************************")
-    print(base)
-    print(settings.AIRWALLEX_CLIENT_ID)
-    print(settings.AIRWALLEX_API_KEY)
-
     async with httpx.AsyncClient() as client:
         r = await client.post(
             f"{base}/api/v1/authentication/login",
@@ -415,17 +410,20 @@ def _normalize_headers(headers: object) -> dict[str, str]:
 async def handle_airwallex_webhook(db: AsyncSession, payload: bytes, headers: object) -> None:
     hdrs = _normalize_headers(headers)
 
-    logger.info("airwallex webhook received")
-    logger.info("headers keys=%s", list(hdrs.keys()))
-    logger.info("payload=%s", payload.decode("utf-8", errors="ignore"))
+    logger.info(
+        "airwallex webhook received headers=%s signature_present=%s payload_len=%s",
+        list(hdrs.keys()), bool(sig), len(payload),
+    )
 
     sig = hdrs.get("x-signature", "")
     if settings.AIRWALLEX_WEBHOOK_SECRET and not _awx_verify_signature(payload, sig):
+        logger.warning("airwallex webhook signature invalid")
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid Airwallex signature")
 
     try:
         event = json.loads(payload)
     except Exception:
+        logger.exception("airwallex webhook invalid json")
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid JSON")
 
     event_type = event.get("name", "")
