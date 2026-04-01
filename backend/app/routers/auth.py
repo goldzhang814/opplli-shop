@@ -16,6 +16,7 @@ GET  /api/v1/auth/facebook/callback
 POST /api/v1/auth/apple/callback
 """
 from typing import Optional
+from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
@@ -27,10 +28,20 @@ from app.models.user import User
 from app.schemas.auth import (
     RegisterRequest, LoginRequest, TokenResponse, UserOut,
     UpdateProfileRequest, ForgotPasswordRequest, ResetPasswordRequest,
-    GuestCheckoutRequest, GuestClaimRequest, OAuthCallbackResponse,
+    GuestCheckoutRequest, GuestClaimRequest,
 )
 from app.services import auth_service
 from app.config import settings
+
+
+def _safe_redirect_path(raw: Optional[str]) -> str:
+    if not raw:
+        return "/"
+    if raw.startswith(("http://", "https://", "//")):
+        return "/"
+    if not raw.startswith("/"):
+        return "/"
+    return raw
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -86,40 +97,76 @@ async def reset_password(req: ResetPasswordRequest, db: AsyncSession = Depends(g
 
 # ── Google OAuth ──────────────────────────────────────────────────────────────
 @router.get("/google")
-async def google_login():
-    params = (
-        f"client_id={settings.GOOGLE_CLIENT_ID}"
-        f"&redirect_uri={settings.GOOGLE_REDIRECT_URI}"
-        f"&response_type=code"
-        f"&scope=openid email profile"
-        f"&access_type=offline"
+async def google_login(redirect: Optional[str] = None):
+    params = {
+        "client_id":     settings.GOOGLE_CLIENT_ID,
+        "redirect_uri":  settings.GOOGLE_REDIRECT_URI,
+        "response_type": "code",
+        "scope":         "openid email profile",
+        "access_type":   "offline",
+    }
+    safe_redirect = _safe_redirect_path(redirect)
+    if safe_redirect != "/":
+        params["state"] = safe_redirect
+    return RedirectResponse(
+        f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
     )
-    return RedirectResponse(f"https://accounts.google.com/o/oauth2/v2/auth?{params}")
 
 
-@router.get("/google/callback", response_model=OAuthCallbackResponse)
-async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
-    return await auth_service.google_callback(db, code)
+@router.get("/google/callback")
+async def google_callback(
+    code: str,
+    state: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    res = await auth_service.google_callback(db, code)
+    safe_redirect = _safe_redirect_path(state)
+    fragment = urlencode(
+        {
+            "token": res["access_token"],
+            "is_new": str(res.get("is_new_user", False)).lower(),
+            "redirect": safe_redirect,
+        }
+    )
+    return RedirectResponse(f"{settings.FRONTEND_URL}/auth/oauth#{fragment}")
 
 
 # ── Facebook OAuth ────────────────────────────────────────────────────────────
 @router.get("/facebook")
-async def facebook_login():
-    params = (
-        f"client_id={settings.FACEBOOK_CLIENT_ID}"
-        f"&redirect_uri={settings.FACEBOOK_REDIRECT_URI}"
-        f"&scope=email,public_profile"
+async def facebook_login(redirect: Optional[str] = None):
+    params = {
+        "client_id":     settings.FACEBOOK_CLIENT_ID,
+        "redirect_uri":  settings.FACEBOOK_REDIRECT_URI,
+        "scope":         "email,public_profile",
+    }
+    safe_redirect = _safe_redirect_path(redirect)
+    if safe_redirect != "/":
+        params["state"] = safe_redirect
+    return RedirectResponse(
+        f"https://www.facebook.com/v19.0/dialog/oauth?{urlencode(params)}"
     )
-    return RedirectResponse(f"https://www.facebook.com/v19.0/dialog/oauth?{params}")
 
 
-@router.get("/facebook/callback", response_model=OAuthCallbackResponse)
-async def facebook_callback(code: str, db: AsyncSession = Depends(get_db)):
-    return await auth_service.facebook_callback(db, code)
+@router.get("/facebook/callback")
+async def facebook_callback(
+    code: str,
+    state: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    res = await auth_service.facebook_callback(db, code)
+    safe_redirect = _safe_redirect_path(state)
+    fragment = urlencode(
+        {
+            "token": res["access_token"],
+            "is_new": str(res.get("is_new_user", False)).lower(),
+            "redirect": safe_redirect,
+        }
+    )
+    return RedirectResponse(f"{settings.FRONTEND_URL}/auth/oauth#{fragment}")
 
 
 # ── Apple OAuth ───────────────────────────────────────────────────────────────
-@router.post("/apple/callback", response_model=OAuthCallbackResponse)
+@router.post("/apple/callback")
 async def apple_callback(
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -128,7 +175,17 @@ async def apple_callback(
     code     = form.get("code", "")
     id_token = form.get("id_token", "")
     user_str = form.get("user")
-    return await auth_service.apple_callback(db, code, id_token, user_str)
+    state = form.get("state")
+    res = await auth_service.apple_callback(db, code, id_token, user_str)
+    safe_redirect = _safe_redirect_path(state)
+    fragment = urlencode(
+        {
+            "token": res["access_token"],
+            "is_new": str(res.get("is_new_user", False)).lower(),
+            "redirect": safe_redirect,
+        }
+    )
+    return RedirectResponse(f"{settings.FRONTEND_URL}/auth/oauth#{fragment}")
 
 
 # ── User Addresses ────────────────────────────────────────────────────────────

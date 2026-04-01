@@ -9,14 +9,14 @@
       <!-- OAuth buttons -->
       <div class="space-y-2 mb-5">
         <a
-          :href="`${config.public.apiBase}/api/v1/auth/google`"
+          :href="googleHref"
           class="flex items-center justify-center gap-3 w-full border border-zinc-200 rounded-xl py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
         >
           <img src="/icons/google.svg" alt="Google" class="w-5 h-5" />
           Continue with {{ $t('auth.google') }}
         </a>
         <a
-          :href="`${config.public.apiBase}/api/v1/auth/facebook`"
+          :href="facebookHref"
           class="flex items-center justify-center gap-3 w-full bg-[#1877F2] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#166FE5] transition-colors"
         >
           <UIcon name="i-lucide-facebook" class="w-5 h-5" />
@@ -84,6 +84,17 @@ const cart    = useCartStore()
 const api     = useApi()
 const toast   = useToast()
 const route   = useRoute()
+const redirect = computed(() => route.query.redirect as string | undefined)
+
+const googleHref = computed(() => {
+  const base = `${config.public.apiBase}/api/v1/auth/google`
+  return redirect.value ? `${base}?redirect=${encodeURIComponent(redirect.value)}` : base
+})
+
+const facebookHref = computed(() => {
+  const base = `${config.public.apiBase}/api/v1/auth/facebook`
+  return redirect.value ? `${base}?redirect=${encodeURIComponent(redirect.value)}` : base
+})
 
 const form   = reactive({ email: '', password: '' })
 const errors = reactive({ email: '', password: '' })
