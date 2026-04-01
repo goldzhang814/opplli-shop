@@ -1,6 +1,6 @@
 <template>
   <div v-if="page" class="container-store py-12 max-w-3xl mx-auto">
-    <h1 class="font-head text-4xl font-bold text-zinc-900 mb-8">{{ page.title }}</h1>
+    <h1 class="font-head text-4xl font-bold text-zinc-900 mb-8 policies-title-center">{{ page.title }}</h1>
     <div class="prose max-w-none" v-html="page.content" />
   </div>
   <div v-else class="container-store py-20 text-center">

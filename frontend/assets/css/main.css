@@ -28,6 +28,22 @@
   }
 }
 
+.policies-title-center {
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .policies-title-center {
+    text-align: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .policies-title-center {
+    text-align: center;
+  }
+}
+
 /* ── Design tokens ─────────────────────────────────────────────────────────── */
 :root {
   --header-h:   68px;

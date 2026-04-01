@@ -145,5 +145,6 @@ const legalLinks = [
   { to: '/pages/privacy-policy',   label: 'Privacy Policy' },
   { to: '/pages/terms-of-service', label: 'Terms of Service' },
   { to: '/pages/cookie-policy',    label: 'Cookie Policy' },
+  { to: '/pages/user-data-deletion',    label: 'User Data Deletion' },
 ]
 </script>
