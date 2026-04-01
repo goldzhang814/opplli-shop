@@ -37,7 +37,7 @@ const { data: post, error } = await useAsyncData(
 if (error.value) throw createError({ statusCode: 404 })
 
 useHead({
-  title:       `${post.value?.title} — MyStore`,
+  title:       `${post.value?.title} — OPPLII`,
   meta: [{ name: 'description', content: post.value?.seo_description || post.value?.excerpt || '' }],
 })
 

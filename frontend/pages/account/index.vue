@@ -201,7 +201,7 @@ const auth   = useAuthStore()
 const api    = useApi()
 const toast  = useToast()
 
-useHead({ title: 'My Account — MyStore' })
+useHead({ title: 'My Account — OPPLII' })
 
 // ── Profile ───────────────────────────────────────────────────────────────────
 const profile = reactive({

@@ -150,7 +150,7 @@ const auth    = useAuthStore()
 const api     = useApi()
 const toast   = useToast()
 
-useHead({ title: `Order Details — MyStore` })
+useHead({ title: `Order Details — OPPLII` })
 
 const { data: order, pending: loading, refresh } = await useAsyncData(
   `order-${route.params.id}`,

@@ -38,7 +38,7 @@ const { locale } = useI18n()
 const api        = useApi()
 const selectedCat= ref<string | null>(null)
 
-useHead({ title: 'FAQ — MyStore' })
+useHead({ title: 'FAQ — OPPLII' })
 
 const { data: categoriesData } = await useAsyncData('faq-cats',
   () => api.getFaqCategories({ lang: locale.value }) as Promise<string[]>

@@ -295,7 +295,7 @@ if (error.value) {
 }
 
 useHead({
-  title: `${product.value?.name} — MyStore`,
+  title: `${product.value?.name} — OPPLII`,
   meta: [
     { name: 'description', content: product.value?.seo_description || product.value?.short_desc || '' },
   ],

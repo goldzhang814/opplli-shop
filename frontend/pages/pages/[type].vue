@@ -22,5 +22,5 @@ const { data: page } = await useAsyncData(
   () => api.getCmsPage(pageType.value, locale.value).catch(() => null) as Promise<any>
 )
 
-useHead({ title: `${page.value?.title || 'Page'} — MyStore` })
+useHead({ title: `${page.value?.title || 'Page'} — OPPLII` })
 </script>

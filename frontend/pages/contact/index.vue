@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-useHead({ title: 'Contact — MyStore' })
+useHead({ title: 'Contact — OPPLII' })
 
 // Contact methods loaded from site_settings via API
 const api = useApi()
@@ -68,8 +68,8 @@ const contactLinks = computed(() => {
   const links = []
   if (s.contact_email || true) links.push({
     label: 'Email Support',
-    value: (s as any).contact_email || 'support@mystore.com',
-    href:  `mailto:${(s as any).contact_email || 'support@mystore.com'}`,
+    value: (s as any).contact_email || 'support@OPPLII.com',
+    href:  `mailto:${(s as any).contact_email || 'support@OPPLII.com'}`,
     icon:  'i-heroicons-envelope',
   })
   if ((s as any).contact_whatsapp) links.push({

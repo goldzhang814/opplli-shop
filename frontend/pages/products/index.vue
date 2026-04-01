@@ -108,7 +108,7 @@ const api   = useApi()
 const route = useRoute()
 const router= useRouter()
 
-useHead({ title: `Products — MyStore` })
+useHead({ title: `Products — OPPLII` })
 
 // State
 const search          = ref((route.query.q as string) || '')

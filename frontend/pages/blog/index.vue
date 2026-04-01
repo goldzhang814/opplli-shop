@@ -65,7 +65,7 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
-useHead({ title: 'Blog — MyStore' })
+useHead({ title: 'Blog — OPPLII' })
 
 const api              = useApi()
 const selectedCategory = ref<number | null>(null)

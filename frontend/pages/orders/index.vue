@@ -64,7 +64,7 @@ const registerLink = computed(() => {
   return email ? `/auth/register?email=${encodeURIComponent(email)}` : '/auth/register'
 })
 
-useHead({ title: `My Orders — MyStore` })
+useHead({ title: `My Orders — OPPLII` })
 
 const { data, pending: loading } = await useAsyncData(
   'my-orders',

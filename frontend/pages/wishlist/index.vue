@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'Wishlist — MyStore' })
+useHead({ title: 'Wishlist — OPPLII' })
 
 const api   = useApi()
 const toast = useToast()

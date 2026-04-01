@@ -172,7 +172,7 @@ const { t, locale } = useI18n()
 const auth   = useAuthStore()
 const api    = useApi()
 
-useHead({ title: 'MyStore — Premium Skin Care' })
+useHead({ title: 'OPPLII — Premium Skin Care' })
 
 // Products
 const { data: productsData, pending: productsLoading } = await useAsyncData(

@@ -11,7 +11,7 @@
       <!-- Logo -->
       <NuxtLink to="/" class="flex items-center gap-2 flex-shrink-0">
         <div class="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
-          <span class="text-white font-bold text-sm font-head">S</span>
+          <span class="text-white font-bold text-sm font-head">O</span>
         </div>
         <span class="font-head font-semibold text-lg text-zinc-900 hidden sm:block">
           {{ siteName }}
@@ -138,7 +138,7 @@ const scrolled    = ref(false)
 const mobileOpen  = ref(false)
 const searchOpen  = ref(false)
 
-const siteName = 'MyStore'
+const siteName = 'OPPLII'
 
 useEventListener('scroll', () => {
   scrolled.value = window.scrollY > 10

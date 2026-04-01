@@ -5,9 +5,9 @@
       <div class="text-center mb-8">
         <NuxtLink to="/" class="inline-flex items-center gap-2 justify-center">
           <div class="w-10 h-10 rounded-2xl bg-emerald-500 flex items-center justify-center">
-            <span class="text-white font-bold font-head">S</span>
+            <span class="text-white font-bold font-head">O</span>
           </div>
-          <span class="font-head font-semibold text-xl text-zinc-900">MyStore</span>
+          <span class="font-head font-semibold text-xl text-zinc-900">OPPLII</span>
         </NuxtLink>
       </div>
       <slot />

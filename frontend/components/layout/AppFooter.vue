@@ -6,9 +6,9 @@
         <div class="md:col-span-1">
           <div class="flex items-center gap-2 mb-4">
             <div class="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
-              <span class="text-white font-bold text-sm font-head">S</span>
+              <span class="text-white font-bold text-sm font-head">O</span>
             </div>
-            <span class="font-head font-semibold text-white text-base">MyStore</span>
+            <span class="font-head font-semibold text-white text-base">OPPLII</span>
           </div>
           <p class="text-sm leading-relaxed mb-5">
             Premium, clinically formulated skin care products for your everyday needs.
@@ -88,7 +88,7 @@
       </div>
 
       <div class="border-t border-zinc-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p class="text-xs">© {{ new Date().getFullYear() }} MyStore. All rights reserved.</p>
+        <p class="text-xs">© {{ new Date().getFullYear() }} OPPLII. All rights reserved.</p>
         <div class="flex flex-wrap gap-x-5 gap-y-1 justify-center">
           <NuxtLink
             v-for="link in legalLinks"
