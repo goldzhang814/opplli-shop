@@ -13,12 +13,13 @@ GET  /api/v1/auth/google
 GET  /api/v1/auth/google/callback
 GET  /api/v1/auth/facebook
 GET  /api/v1/auth/facebook/callback
+GET  /api/v1/auth/facebook/webhook
 POST /api/v1/auth/apple/callback
 """
 from typing import Optional
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -45,6 +46,7 @@ def _safe_redirect_path(raw: Optional[str]) -> str:
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
+VERIFY_TOKEN = "opplii_fb_verify_token_9xK3LmP2"
 
 # ── Register ──────────────────────────────────────────────────────────────────
 @router.post("/register", response_model=TokenResponse, status_code=201)
@@ -163,6 +165,19 @@ async def facebook_callback(
         }
     )
     return RedirectResponse(f"{settings.FRONTEND_URL}/auth/oauth#{fragment}")
+
+@router.get("/facebook/webhook")
+async def facebook_webhook_verify(request: Request):
+    params = request.query_params
+
+    mode = params.get("hub.mode")
+    token = params.get("hub.verify_token")
+    challenge = params.get("hub.challenge")
+
+    if mode == "subscribe" and token == VERIFY_TOKEN:
+        return Response(content=challenge, media_type="text/plain")
+
+    return Response(content="Forbidden", status_code=403)
 
 
 # ── Apple OAuth ───────────────────────────────────────────────────────────────
