@@ -12,12 +12,13 @@ from typing import Optional
 
 import httpx
 from fastapi import HTTPException, status
-from sqlalchemy import select, update, func
+from sqlalchemy import select, update, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.core.security import hash_password, verify_password, create_access_token
-from app.models.user import User, OAuthAccount, PasswordResetToken, GuestClaimToken
+from app.models.user import User, OAuthAccount, PasswordResetToken, GuestClaimToken, UserAddress
+from app.models.product import Wishlist
 from app.schemas.auth import (
     RegisterRequest, LoginRequest, UpdateProfileRequest,
     GuestCheckoutRequest, GuestClaimRequest,
@@ -381,3 +382,25 @@ async def update_profile(db: AsyncSession, user: User, req: UpdateProfileRequest
         user.password_hash = hash_password(req.new_password)
 
     return user
+
+
+# ── User data deletion (anonymize) ───────────────────────────────────────────
+async def anonymize_user(db: AsyncSession, user: User) -> None:
+    # Remove linked records that may contain PII
+    await db.execute(delete(OAuthAccount).where(OAuthAccount.user_id == user.id))
+    await db.execute(delete(UserAddress).where(UserAddress.user_id == user.id))
+    await db.execute(delete(Wishlist).where(Wishlist.user_id == user.id))
+    await db.execute(delete(PasswordResetToken).where(PasswordResetToken.user_id == user.id))
+    await db.execute(delete(GuestClaimToken).where(GuestClaimToken.user_id == user.id))
+
+    # Anonymize user record (keep row for FK integrity)
+    token = secrets.token_hex(6)
+    user.email = f"deleted_{user.id}_{token}@deleted.local"
+    user.full_name = None
+    user.phone = None
+    user.avatar_url = None
+    user.password_hash = None
+    user.is_active = False
+    user.is_guest = False
+    user.agree_terms = False
+    user.agreed_at = None

@@ -108,6 +108,20 @@
           No saved addresses yet.
         </div>
       </UCard>
+
+      <!-- Privacy & Data -->
+      <UCard class="rounded-2xl">
+        <h2 class="font-head font-semibold text-lg text-zinc-900 mb-2">Privacy & Data</h2>
+        <p class="text-sm text-zinc-600 mb-4">
+          You can request account data deletion. We will anonymize your profile and remove
+          personal details while keeping order history for record integrity.
+        </p>
+        <div class="flex justify-end">
+          <UButton color="red" variant="outline" @click="showDeleteModal = true">
+            Delete my data
+          </UButton>
+        </div>
+      </UCard>
     </div>
 
     <!-- ── Address form modal ── -->
@@ -190,6 +204,37 @@
         </template>
       </UCard>
     </UModal>
+
+    <!-- Data deletion confirmation -->
+    <UModal v-model="showDeleteModal">
+      <UCard class="rounded-2xl">
+        <template #header>
+          <h3 class="font-head font-semibold text-zinc-900">Confirm Data Deletion</h3>
+        </template>
+
+        <div class="space-y-3">
+          <p class="text-sm text-zinc-600">
+            This will anonymize your account and disable login. Type <span class="font-semibold">DELETE</span>
+            to confirm.
+          </p>
+          <UInput v-model="deleteConfirm" placeholder="Type DELETE to confirm" />
+        </div>
+
+        <template #footer>
+          <div class="flex justify-end gap-3">
+            <UButton variant="ghost" color="gray" @click="showDeleteModal = false">Cancel</UButton>
+            <UButton
+              color="red"
+              :loading="deletingAccount"
+              :disabled="deleteConfirm !== 'DELETE'"
+              @click="deleteAccount"
+            >
+              Delete my data
+            </UButton>
+          </div>
+        </template>
+      </UCard>
+    </UModal>
   </div>
 </template>
 
@@ -214,6 +259,9 @@ const profile = reactive({
   confirm_password: '',
 })
 const savingProfile = ref(false)
+const showDeleteModal = ref(false)
+const deleteConfirm = ref('')
+const deletingAccount = ref(false)
 
 const langOptions = [
   { value: 'en', label: 'English' },
@@ -346,4 +394,21 @@ async function setDefault(id: number) {
 }
 
 onMounted(loadAddresses)
+
+async function deleteAccount() {
+  if (deleteConfirm.value !== 'DELETE') return
+  deletingAccount.value = true
+  try {
+    await api.deleteAccount()
+    auth.logout()
+    showDeleteModal.value = false
+    deleteConfirm.value = ''
+    toast.add({ title: 'Your data has been deleted', color: 'green' })
+    await navigateTo('/')
+  } catch (e: any) {
+    toast.add({ title: e?.data?.detail || t('common.error'), color: 'red' })
+  } finally {
+    deletingAccount.value = false
+  }
+}
 </script>

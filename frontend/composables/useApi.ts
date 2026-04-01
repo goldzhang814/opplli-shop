@@ -41,6 +41,7 @@ export function useApi() {
     login:           (body: object)            => api('/auth/login',    { method: 'POST', body }),
     me:              ()                        => api('/auth/me'),
     updateMe:        (body: object)            => api('/auth/me',       { method: 'PUT',  body }),
+    deleteAccount:   ()                        => api('/auth/delete-account', { method: 'POST' }),
     guestCheckout:   (body: object)            => api('/auth/guest',    { method: 'POST', body }),
     forgotPassword:  (body: object)            => api('/auth/forgot-password', { method: 'POST', body }),
     resetPassword:   (body: object)            => api('/auth/reset-password',  { method: 'POST', body }),

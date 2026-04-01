@@ -19,7 +19,7 @@ POST /api/v1/auth/apple/callback
 from typing import Optional
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -73,6 +73,15 @@ async def update_me(
     db:   AsyncSession     = Depends(get_db),
 ):
     return await auth_service.update_profile(db, user, req)
+
+
+@router.post("/delete-account", status_code=204)
+async def delete_account(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await auth_service.anonymize_user(db, user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # ── Guest checkout ────────────────────────────────────────────────────────────
