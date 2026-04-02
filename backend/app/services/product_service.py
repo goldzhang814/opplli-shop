@@ -441,6 +441,9 @@ async def submit_review(
     req:        ReviewSubmit,
     media_files:list[UploadFile] = [],
 ) -> ProductReview:
+    if len(media_files) > 3:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Max 3 media files per review")
+
     # Must be a verified purchaser
     r = await db.execute(
         select(Order)
@@ -448,7 +451,8 @@ async def submit_review(
         .join(ProductSku, ProductSku.id == OrderItem.sku_id)
         .where(
             Order.user_id          == user_id,
-            Order.status           == "completed",
+            Order.payment_status   == "paid",
+            Order.status.in_(("pending_shipment", "shipped", "completed")),
             ProductSku.product_id  == req.product_id,
         )
     )
@@ -474,7 +478,7 @@ async def submit_review(
     await db.flush()
 
     # Upload media
-    for i, mf in enumerate(media_files[:5]):  # max 5 files per review
+    for i, mf in enumerate(media_files[:3]):  # max 3 files per review
         allowed = ALLOWED_IMAGE_MIMES | ALLOWED_VIDEO_MIMES
         result  = await upload_file(mf, folder=f"reviews/{review.id}", allowed_mimes=allowed)
         db.add(ReviewMedia(

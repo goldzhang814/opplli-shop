@@ -124,7 +124,19 @@
     "items":         "Artículos",
     "shippingTo":    "Entrega en",
     "paymentMethod": "Pago",
-    "orderDate":     "Fecha del Pedido"
+    "orderDate":     "Fecha del Pedido",
+    "review":        "Rese帽ar",
+    "reviewTitle":   "Escribir rese帽a",
+    "reviewItem":    "Art铆culo",
+    "reviewItemPlaceholder": "Selecciona un art铆culo",
+    "reviewRating":  "Calificaci贸n",
+    "reviewContent": "Tu rese帽a",
+    "reviewContentPlaceholder": "Comparte tu experiencia...",
+    "reviewMedia":   "Fotos o videos",
+    "reviewMediaHint": "Hasta 3 archivos (im谩genes o videos).",
+    "reviewSubmit":  "Enviar rese帽a",
+    "reviewSubmitted": "Rese帽a enviada",
+    "reviewNoItems": "No hay art铆culos para rese帽ar"
   },
   "common": {
     "loading":  "Cargando…",

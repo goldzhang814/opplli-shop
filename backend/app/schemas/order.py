@@ -6,6 +6,7 @@ from pydantic import BaseModel
 class OrderItemOut(BaseModel):
     id:            int
     sku_id:        Optional[int]
+    product_id:    Optional[int]
     product_name:  str
     sku_code:      str
     variant_attrs: Optional[dict]
@@ -58,6 +59,7 @@ class OrderListItem(BaseModel):
     payment_status: str
     item_count:     int
     created_at:     Any
+    items:          list[OrderItemOut] = []
     model_config = {"from_attributes": True}
 
 

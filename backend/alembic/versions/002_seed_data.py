@@ -242,6 +242,8 @@ def upgrade() -> None:
         ("terms_of_use",   "es", "Términos de Uso",  "<h1>Términos de Uso</h1><p>Edita esta página.</p>"),
         ("cookie_policy",  "en", "Cookie Policy",    "<h1>Cookie Policy</h1><p>Edit this page in the admin panel.</p>"),
         ("cookie_policy",  "es", "Política de Cookies","<h1>Política de Cookies</h1><p>Edita esta página.</p>"),
+        ("user_data_deletion", "en", "User Data Deletion", "<h1>User Data Deletion</h1><p>Edit this page in the admin panel.</p>"),
+        ("user_data_deletion", "es", "Eliminación de datos de Usuario", "<h1>Eliminación de datos de Usuario</h1><p>Edita esta página.</p>"),
     ]
     conn.execute(sa.text("""
         INSERT INTO cms_pages (page_type, language_code, title, content, is_published, created_at, updated_at)

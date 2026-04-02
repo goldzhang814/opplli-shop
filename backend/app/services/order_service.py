@@ -22,10 +22,15 @@ from app.schemas.order import ShipOrderRequest, AdminOrderUpdate
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def _with_relations(q):
     return q.options(
-        selectinload(Order.items),
+        selectinload(Order.items).selectinload(OrderItem.sku),
         selectinload(Order.shipment).selectinload(Shipment.carrier),
         selectinload(Order.payments),
         selectinload(Order.status_logs),
+    )
+
+def _with_items(q):
+    return q.options(
+        selectinload(Order.items).selectinload(OrderItem.sku),
     )
 
 
@@ -65,6 +70,7 @@ def _build_order_out(order: Order) -> dict:
             {
                 "id":            i.id,
                 "sku_id":        i.sku_id,
+                "product_id":    i.sku.product_id if i.sku else None,
                 "product_name":  i.product_name,
                 "sku_code":      i.sku_code,
                 "variant_attrs": i.variant_attrs,
@@ -90,7 +96,7 @@ async def get_user_orders(
     q     = select(Order).where(Order.user_id == user_id).order_by(Order.created_at.desc())
     total = (await db.execute(select(func.count()).select_from(q.subquery()))).scalar_one()
     items = (await db.execute(
-        _with_relations(q).offset((page - 1) * limit).limit(limit)
+        _with_items(q).offset((page - 1) * limit).limit(limit)
     )).scalars().all()
 
     return {
@@ -104,6 +110,21 @@ async def get_user_orders(
                 "total_amount":   float(o.total_amount),
                 "item_count":     len(o.items),
                 "created_at":     o.created_at,
+                "items":          [
+                    {
+                        "id":            i.id,
+                        "sku_id":        i.sku_id,
+                        "product_id":    i.sku.product_id if i.sku else None,
+                        "product_name":  i.product_name,
+                        "sku_code":      i.sku_code,
+                        "variant_attrs": i.variant_attrs,
+                        "quantity":      i.quantity,
+                        "unit_price":    float(i.unit_price),
+                        "subtotal":      float(i.subtotal),
+                        "product_image": i.product_image,
+                    }
+                    for i in o.items
+                ],
             }
             for o in items
         ],
