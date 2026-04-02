@@ -398,7 +398,8 @@ const reviews = computed(() => reviewsData.value?.items ?? [])
 // Tabs
 const tabs = computed(() => [
   { key: 'description', label: t('product.description') },
-  { key: 'reviews',     label: `${t('product.reviews')} (${product.value?.rating_count ?? 0})` },
+  { key: 'reviews',     label: `${t('product.reviews')}` },
+  //{ key: 'reviews',     label: `${t('product.reviews')} (${product.value?.rating_count ?? 0})` },
 ])
 
 // Trust items

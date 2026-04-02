@@ -27,6 +27,27 @@
           </div>
           <div style="flex:1;min-width:0">
             <p style="font-size:13px;color:#374151;line-height:1.6">{{ r.content || '(no text)' }}</p>
+            <div v-if="r.media?.length" class="review-media-grid">
+              <div v-for="m in r.media" :key="m.id" class="review-media-item">
+                <n-image
+                  v-if="m.media_type === 'image'"
+                  :src="m.url"
+                  fit="cover"
+                  width="100%"
+                  height="100%"
+                  :preview-src-list="[m.url]"
+                />
+                <video
+                  v-else
+                  class="review-media-video"
+                  :src="m.url"
+                  controls
+                  muted
+                  playsinline
+                  preload="metadata"
+                ></video>
+              </div>
+            </div>
             <n-tag :type="r.status==='approved'?'success':r.status==='rejected'?'error':'warning'" size="small" round style="margin-top:6px">{{ r.status }}</n-tag>
           </div>
           <div v-if="r.status==='pending'" style="flex-shrink:0;display:flex;flex-direction:column;gap:6px">
@@ -66,4 +87,7 @@ onMounted(load)
 .page-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:20px; }
 .page-title { font-size:20px;font-weight:600;color:#18181b; }
 .page-sub { font-size:13px;color:#9ca3af;margin-top:2px; }
+.review-media-grid { display:flex;flex-wrap:wrap;gap:10px;margin-top:10px; }
+.review-media-item { width:120px;height:85px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#f9fafb;display:flex; }
+.review-media-item video { width:100%;height:100%;object-fit:cover;border:none; }
 </style>

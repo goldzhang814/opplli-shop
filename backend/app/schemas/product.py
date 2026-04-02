@@ -180,6 +180,14 @@ class ReviewSubmit(BaseModel):
     reviewer_name: Optional[str] = None
 
 
+class ReviewMediaOut(BaseModel):
+    id:           int
+    url:          str
+    storage_type: str
+    media_type:   str
+    sort_order:   int
+    model_config = {"from_attributes": True}
+
 class ReviewOut(BaseModel):
     id:                   int
     product_id:           int
@@ -189,7 +197,7 @@ class ReviewOut(BaseModel):
     status:               str
     reviewer_name:        Optional[str]
     is_verified_purchase: bool
-    media:                list[dict] = []
+    media:                list["ReviewMediaOut"] = []
     created_at:           Any
     model_config = {"from_attributes": True}
 

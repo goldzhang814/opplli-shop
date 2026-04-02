@@ -58,6 +58,35 @@ def _resolve_images(images: list[ProductImage]) -> list[ProductImageOut]:
     ]
 
 
+def _resolve_review_media(media: list[ReviewMedia]) -> list[dict]:
+    sorted_media = sorted(media, key=lambda m: m.sort_order)
+    return [
+        {
+            "id":           m.id,
+            "url":          resolve_url(m.url, m.storage_type),
+            "storage_type": m.storage_type,
+            "media_type":   m.media_type,
+            "sort_order":   m.sort_order,
+        }
+        for m in sorted_media
+    ]
+
+
+def _review_dict(review: ProductReview) -> dict:
+    return {
+        "id":                   review.id,
+        "product_id":           review.product_id,
+        "user_id":              review.user_id,
+        "rating":               review.rating,
+        "content":              review.content,
+        "status":               review.status,
+        "reviewer_name":        review.reviewer_name,
+        "is_verified_purchase": review.is_verified_purchase,
+        "media":                _resolve_review_media(review.media),
+        "created_at":           review.created_at,
+    }
+
+
 def _product_list_item(p: Product) -> dict:
     prices     = [s.price for s in p.skus if s.is_active]
     cover      = None
@@ -536,7 +565,12 @@ async def list_reviews(
     q     = q.order_by(ProductReview.created_at.desc())
     total = (await db.execute(select(func.count()).select_from(q.subquery()))).scalar_one()
     items = (await db.execute(q.offset((page - 1) * limit).limit(limit))).scalars().all()
-    return {"items": items, "total": total, "page": page, "pages": max(1, math.ceil(total / limit))}
+    return {
+        "items": [_review_dict(review) for review in items],
+        "total": total,
+        "page": page,
+        "pages": max(1, math.ceil(total / limit)),
+    }
 
 
 # ────────────────────────────────────────────────────────────────────────────
