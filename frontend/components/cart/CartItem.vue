@@ -2,7 +2,7 @@
   <div class="flex gap-3 py-3 border-b border-zinc-100 last:border-0 animate-fade-in">
     <!-- Image -->
     <NuxtLink :to="`/products/${item.product_slug}`" @click="useCartStore().closeCart()">
-      <div class="w-18 h-18 rounded-xl bg-zinc-100 overflow-hidden flex-shrink-0">
+      <div class="w-16 h-16 rounded-xl bg-zinc-100 overflow-hidden flex-shrink-0">
         <img
           v-if="item.cover_image"
           :src="item.cover_image"
