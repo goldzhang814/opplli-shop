@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     # App
     APP_ENV:      Literal["development", "production"] = "development"
     APP_SECRET_KEY: str = "changeme"
-    APP_NAME:     str   = "My Store"
+    APP_NAME:     str   = "OPPLII"
     APP_URL:      str   = "http://localhost:9010"
     FRONTEND_URL: str   = "http://localhost:9001"
     ADMIN_URL:    str   = "http://localhost:9002"
@@ -62,14 +62,14 @@ class Settings(BaseSettings):
     AIRWALLEX_ENV:            str = "demo"
 
     # Email
-    EMAIL_PROVIDER:  str = "resend"
-    EMAIL_FROM:      str = "noreply@example.com"
-    EMAIL_FROM_NAME: str = "My Store"
+    EMAIL_PROVIDER:  str = "SMTP"
+    EMAIL_FROM:      str = "service@opplii.com"
+    EMAIL_FROM_NAME: str = "OPPLII"
     RESEND_API_KEY:  str = ""
     SENDGRID_API_KEY: str = ""
-    SMTP_HOST:       str = ""
+    SMTP_HOST:       str = "mail.privateemail.com"
     SMTP_PORT:       int = 587
-    SMTP_USER:       str = ""
+    SMTP_USER:       str = "service@opplii.com"
     SMTP_PASSWORD:   str = ""
 
     # Storage
