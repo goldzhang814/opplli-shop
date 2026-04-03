@@ -62,6 +62,15 @@ async def bulk_upsert_settings(db: AsyncSession, data: dict[str, str]) -> None:
         await upsert_setting(db, k, v)
 
 
+async def get_settings_by_keys(db: AsyncSession, keys: list[str]) -> dict[str, str]:
+    if not keys:
+        return {}
+    r = await db.execute(
+        select(SiteSetting).where(SiteSetting.key.in_(keys))
+    )
+    return {s.key: (s.value or "") for s in r.scalars().all()}
+
+
 # ────────────────────────────────────────────────────────────────────────────
 # SEO config (stored as site_settings with seo.* prefix)
 # ────────────────────────────────────────────────────────────────────────────

@@ -109,6 +109,7 @@ export function useApi() {
     getBanners:      ()                        => api('/banners'),
     getI18n:         (lang: string)            => api(`/i18n/${lang}`),
     getCookieConfig: (lang = 'en')             => api(`/cookie-consent`, { query: { lang } }),
+    getSiteSettings: ()                        => api('/settings/public'),
 
     // Newsletter
     subscribe:       (body: object)            => api('/newsletter/subscribe', { method: 'POST', body }),

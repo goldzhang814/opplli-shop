@@ -5,8 +5,7 @@
       <p class="text-zinc-500">Have a question? We're here to help.</p>
     </div>
 
-    <div class="grid sm:grid-cols-2 gap-8">
-      <!-- Contact methods -->
+<div class="grid lg:grid-cols-[1.2fr_1fr] gap-8">
       <div class="space-y-4">
         <h2 class="font-head font-semibold text-zinc-900 mb-2">Get in touch</h2>
 
@@ -27,9 +26,24 @@
           </div>
           <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-4 h-4 text-zinc-300 ml-auto" />
         </a>
+
+        <div class="border border-zinc-200 rounded-2xl p-5 bg-white shadow-sm">
+          <p class="text-xs text-zinc-500 uppercase tracking-widest mb-3">Business Info</p>
+          <p class="font-semibold text-zinc-900 text-sm">{{ businessInfo.name }}</p>
+          <p class="text-xs text-zinc-500 mb-3">Reg. No. {{ businessInfo.registration }}</p>
+          <p class="text-sm text-zinc-600">
+            <strong>Address:</strong><br />
+            {{ businessInfo.address }}
+          </p>
+          <p class="text-sm text-zinc-600 mt-2">
+            <strong>Phone:</strong> {{ businessInfo.phone }}
+          </p>
+          <p class="text-sm text-zinc-600">
+            <strong>Email:</strong> <a :href="`mailto:${businessInfo.email}`" class="text-emerald-600 hover:underline">{{ businessInfo.email }}</a>
+          </p>
+        </div>
       </div>
 
-      <!-- FAQ shortcut -->
       <div class="bg-emerald-50 rounded-2xl p-6 flex flex-col justify-between">
         <div>
           <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center mb-4">
@@ -41,7 +55,7 @@
           </p>
         </div>
         <UButton to="/faq" variant="solid" class="mt-5">
-          Browse FAQ →
+          Browse FAQ?
         </UButton>
       </div>
     </div>
@@ -55,12 +69,10 @@ useHead({ title: 'Contact — OPPLII' })
 const api = useApi()
 const { data: settings } = await useAsyncData('contact-settings', async () => {
   try {
-    // Fetch individual settings
-    const keys = ['contact_whatsapp', 'contact_facebook', 'contact_telegram', 'contact_email']
-    const results: Record<string, string> = {}
-    // Settings returned as array from /admin — for public we hardcode defaults
-    return results
-  } catch { return {} }
+    return await api.getSiteSettings()
+  } catch {
+    return {}
+  }
 }, { default: () => ({}) })
 
 const contactLinks = computed(() => {
@@ -87,9 +99,19 @@ const contactLinks = computed(() => {
   if ((s as any).contact_telegram) links.push({
     label: 'Telegram',
     value: (s as any).contact_telegram,
-    href:  `https://t.me/${(s as any).contact_telegram}`,
     icon:  'i-lucide-send',
   })
   return links
+})
+
+const businessInfo = computed(() => {
+  const s = settings.value || {}
+  return {
+    name: s.company_name || 'Hong Kong Global Cross-border Trading Co., Limited',
+    registration: s.business_registration_number || 'le_797UXoxZN1WoMSmJlXI2Yw',
+    address: s.business_address || 'ROOM A16, FLAT 1, 7/F, BLOCK 3 NAN FUNG INDUSTRIAL CITY, 18 TIN HAU ROAD, TUEN MUN, N.T., HONG KONG',
+    email: s.contact_email || 'service@opplii.com',
+    phone: s.contact_phone || '+86 13632836027',
+  }
 })
 </script>

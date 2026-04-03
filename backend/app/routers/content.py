@@ -139,6 +139,23 @@ async def get_language_pack(
     return await content_service.get_language_pack(db, lang)
 
 
+@router.get("/settings/public")
+async def public_settings(
+    db: AsyncSession = Depends(get_db),
+):
+    keys = [
+        "contact_email",
+        "contact_whatsapp",
+        "contact_facebook",
+        "contact_telegram",
+        "contact_phone",
+        "company_name",
+        "business_registration_number",
+        "business_address",
+    ]
+    return await content_service.get_settings_by_keys(db, keys)
+
+
 # ── Cookie consent ────────────────────────────────────────────────────────────
 @router.get("/cookie-consent")
 async def get_cookie_consent(
