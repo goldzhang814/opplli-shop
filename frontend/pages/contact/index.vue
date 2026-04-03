@@ -27,7 +27,7 @@
           <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-4 h-4 text-zinc-300 ml-auto" />
         </a>
 
-        <div class="border border-zinc-200 rounded-2xl p-5 bg-white shadow-sm">
+        <div class="border border-zinc-200 rounded-2xl p-5 bg-white shadow-sm space-y-3">
           <p class="text-xs text-zinc-500 uppercase tracking-widest mb-3">Business Info</p>
           <p class="font-semibold text-zinc-900 text-sm">{{ businessInfo.name }}</p>
           <p class="text-xs text-zinc-500 mb-3">Reg. No. {{ businessInfo.registration }}</p>
@@ -40,6 +40,9 @@
           </p>
           <p class="text-sm text-zinc-600">
             <strong>Email:</strong> <a :href="`mailto:${businessInfo.email}`" class="text-emerald-600 hover:underline">{{ businessInfo.email }}</a>
+          </p>
+          <p class="text-xs text-zinc-500 leading-relaxed">
+            {{ governingLaw }}
           </p>
         </div>
       </div>
@@ -99,6 +102,7 @@ const contactLinks = computed(() => {
   if ((s as any).contact_telegram) links.push({
     label: 'Telegram',
     value: (s as any).contact_telegram,
+    href:  `https://t.me/${(s as any).contact_telegram}`,
     icon:  'i-lucide-send',
   })
   return links
@@ -113,5 +117,12 @@ const businessInfo = computed(() => {
     email: s.contact_email || 'service@opplii.com',
     phone: s.contact_phone || '+86 13632836027',
   }
+})
+
+const governingLaw = computed(() => {
+  const lawText = settings.value?.governing_law
+  return lawText
+    ? lawText
+    : 'All customer communications and purchases conducted through this site are governed by the laws of the Hong Kong Special Administrative Region.'
 })
 </script>

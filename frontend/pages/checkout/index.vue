@@ -239,6 +239,9 @@
                 <NuxtLink to="/pages/privacy-policy" target="_blank" class="text-emerald-600 hover:underline">Privacy Policy</NuxtLink>.
               </label>
             </div>
+            <p class="text-xs text-zinc-500 mb-4">
+              All orders placed through this checkout are governed by the laws of the Hong Kong Special Administrative Region.
+            </p>
 
             <div class="flex gap-3">
               <UButton variant="ghost" color="gray" @click="step--">← Back</UButton>
