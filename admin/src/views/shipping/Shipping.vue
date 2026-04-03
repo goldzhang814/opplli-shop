@@ -91,8 +91,26 @@
       <n-card style="width:480px;border-radius:14px" :title="editTaxId?'Edit Tax Rule':'New Tax Rule'">
         <n-form label-placement="top" size="medium">
           <n-grid :cols="2" :x-gap="12">
-            <n-gi><n-form-item label="Country Code *"><n-input v-model:value="tf.country_code" placeholder="US" maxlength="3"/></n-form-item></n-gi>
-            <n-gi><n-form-item label="State Code"><n-input v-model:value="tf.state_code" placeholder="CA (optional)" maxlength="6"/></n-form-item></n-gi>
+            <n-gi>
+              <n-form-item label="Country Code *">
+                <n-select
+                  v-model:value="tf.country_code"
+                  :options="countryOptions"
+                  placeholder="Select country"
+                  clearable
+                />
+              </n-form-item>
+            </n-gi>
+            <n-gi>
+              <n-form-item label="State Code">
+                <n-select
+                  v-model:value="tf.state_code"
+                  :options="stateSelectOptions"
+                  placeholder="All states (country-wide)"
+                  clearable
+                />
+              </n-form-item>
+            </n-gi>
             <n-gi><n-form-item label="Tax Rate (%) *"><n-input-number v-model:value="tf.tax_rate" :min="0" :max="100" :precision="2" style="width:100%"/></n-form-item></n-gi>
             <n-gi><n-form-item label="Tax Name"><n-input v-model:value="tf.tax_name" placeholder="Sales Tax"/></n-form-item></n-gi>
           </n-grid>
@@ -109,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, h } from 'vue'
+import { ref, reactive, computed, onMounted, h, watch } from 'vue'
 import { NTag, NButton, NIcon, NSpace, useMessage } from 'naive-ui'
 import { AddOutline, CreateOutline, TrashOutline } from '@vicons/ionicons5'
 import { api, errMsg } from '@/composables/useApi'
@@ -117,15 +135,82 @@ import { api, errMsg } from '@/composables/useApi'
 const message = useMessage()
 const saving  = ref(false)
 
-const zones   = ref<any[]>([])
-const carriers= ref<any[]>([])
-const taxRules= ref<any[]>([])
+const zones           = ref<any[]>([])
+const carriers        = ref<any[]>([])
+const taxRules        = ref<any[]>([])
+const shippingRegions = ref<any[]>([])
+const countryOptions  = ref<{ label: string; value: string }[]>([])
+const stateOptions    = ref<string[]>([])
+const stateCache      = reactive<Record<string, string[]>>({})
+
+const stateSelectOptions = computed(() => [
+  { label: 'All states (country-wide)', value: '' },
+  ...stateOptions.value.map(code => ({ label: code, value: code })),
+])
 
 const loadAll = async () => {
   try {
-    const [z, c, t] = await Promise.all([api.shippingZones(), api.carriers(), api.taxRules()])
-    zones.value = z.data; carriers.value = c.data; taxRules.value = t.data
+    const [z, c, t, r] = await Promise.all([
+      api.shippingZones(),
+      api.carriers(),
+      api.taxRules(),
+      api.shippingRegions(),
+    ])
+    zones.value = z.data
+    carriers.value = c.data
+    taxRules.value = t.data
+    shippingRegions.value = Array.isArray(r.data) ? r.data : []
+    updateCountryOptions()
   } catch {}
+}
+
+function updateCountryOptions() {
+  const countrySet = new Set<string>()
+  zones.value.forEach(z => {
+    (z.country_codes || []).forEach((cc: string) => {
+      if (cc) countrySet.add(cc.toUpperCase())
+    })
+  })
+  shippingRegions.value.forEach(region => {
+    if (region?.country_code) {
+      countrySet.add(region.country_code.toUpperCase())
+    }
+  })
+  countryOptions.value = [...countrySet]
+    .filter(Boolean)
+    .sort()
+    .map(code => ({ label: code, value: code }))
+}
+
+async function ensureRegionsLoaded() {
+  if (shippingRegions.value.length) return
+  try {
+    const { data } = await api.shippingRegions()
+    shippingRegions.value = Array.isArray(data) ? data : []
+    updateCountryOptions()
+  } catch {}
+}
+
+async function loadStates(country?: string) {
+  const upper = country?.toUpperCase?.()
+  if (!upper) {
+    stateOptions.value = []
+    return
+  }
+  await ensureRegionsLoaded()
+  if (stateCache[upper]) {
+    stateOptions.value = stateCache[upper]
+    return
+  }
+  const states = Array.from(
+    new Set(
+      shippingRegions.value
+        .filter(region => (region.country_code?.toUpperCase() ?? '') === upper && region.state_code)
+        .map(region => (region.state_code as string).toUpperCase())
+    )
+  )
+  stateCache[upper] = states
+  stateOptions.value = states
 }
 
 // Rule edit
@@ -151,12 +236,60 @@ const carrierCols = [
 // Tax rules
 const showTaxForm = ref(false); const editTaxId = ref<number|null>(null)
 const tf = reactive({ country_code:'', state_code:'', tax_rate:0, tax_name:'Sales Tax', apply_to_shipping:false, is_active:true })
-function openTaxForm(t?: any) { editTaxId.value=t?.id??null; Object.assign(tf, t?{country_code:t.country_code,state_code:t.state_code||'',tax_rate:parseFloat(t.tax_rate)*100,tax_name:t.tax_name,apply_to_shipping:t.apply_to_shipping,is_active:t.is_active}:{country_code:'',state_code:'',tax_rate:0,tax_name:'Sales Tax',apply_to_shipping:false,is_active:true}); showTaxForm.value=true }
+
+watch(() => tf.country_code, (newVal) => {
+  if (!newVal) {
+    stateOptions.value = []
+    return
+  }
+  const upper = newVal.toUpperCase()
+  if (upper !== newVal) {
+    tf.country_code = upper
+    return
+  }
+  loadStates(upper)
+})
+async function openTaxForm(t?: any) {
+  editTaxId.value = t?.id ?? null
+  Object.assign(tf, t ? {
+    country_code: t.country_code,
+    state_code: t.state_code || '',
+    tax_rate: parseFloat(t.tax_rate) * 100,
+    tax_name: t.tax_name,
+    apply_to_shipping: t.apply_to_shipping,
+    is_active: t.is_active,
+  } : {
+    country_code: '',
+    state_code: '',
+    tax_rate: 0,
+    tax_name: 'Sales Tax',
+    apply_to_shipping: false,
+    is_active: true,
+  })
+  await loadStates(tf.country_code)
+  showTaxForm.value = true
+}
 async function saveTax() {
-  saving.value=true
-  const payload = { ...tf, tax_rate: tf.tax_rate / 100, state_code: tf.state_code || undefined }
-  try { editTaxId.value?await api.updateTax(editTaxId.value,payload):await api.createTax(payload); message.success('Saved'); showTaxForm.value=false; loadAll() }
-  catch(e){message.error(errMsg(e))} finally{saving.value=false}
+  saving.value = true
+  const payload = {
+    ...tf,
+    tax_rate: tf.tax_rate / 100,
+    state_code: tf.state_code || undefined,
+  }
+  try {
+    if (editTaxId.value) {
+      await api.updateTax(editTaxId.value, payload)
+    } else {
+      await api.createTax(payload)
+    }
+    message.success('Saved')
+    showTaxForm.value = false
+    loadAll()
+  } catch (e) {
+    message.error(errMsg(e))
+  } finally {
+    saving.value = false
+  }
 }
 
 const taxCols = [
