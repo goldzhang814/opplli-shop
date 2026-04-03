@@ -486,6 +486,8 @@ const { data: states, refresh: refreshStates } = await useAsyncData(
 
 const shippingEstimate = ref<any>(null)
 
+const { $getChannelRef } = useNuxtApp()
+
 async function onCountryChange() {
   address.state_code  = ''
   address.state_name  = ''
@@ -683,6 +685,7 @@ async function placeOrder() {
       coupon_code:    appliedCoupon.value?.code || undefined,
       language_code:  locale.value,
       save_address:   saveAddress.value,
+      channel_ref: $getChannelRef()
     }) as any
 
     orderId.value = res.order_id

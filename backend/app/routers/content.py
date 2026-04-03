@@ -18,12 +18,16 @@ GET  /api/v1/cookie-consent               — cookie config
 from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import PlainTextResponse, Response
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, EmailStr
 
 from app.database import get_db
 from app.services import content_service
 from app.config import settings
+
+from app.models.marketing import MarketingChannel, ChannelEvent
+import base64
 
 router = APIRouter(tags=["Content"])
 
@@ -167,3 +171,32 @@ async def robots_txt(db: AsyncSession = Depends(get_db)):
     if not txt:
         txt = f"User-agent: *\nAllow: /\nSitemap: {settings.FRONTEND_URL}/sitemap.xml"
     return PlainTextResponse(txt)
+
+@router.get("/track")
+async def track_event(
+    ref:        str,
+    event:      str        = "visit",
+    order_id:   int | None = None,
+    db:         AsyncSession = Depends(get_db),
+):
+    # Find channel by ref_code
+    r  = await db.execute(
+        select(MarketingChannel).where(
+            MarketingChannel.ref_code == ref,
+            MarketingChannel.is_active == True,
+        )
+    )
+    ch = r.scalar_one_or_none()
+    if ch:
+        db.add(ChannelEvent(
+            channel_id = ch.id,
+            event_type = event,
+            order_id   = order_id,
+        ))
+        await db.commit()
+
+    # Return 1x1 transparent GIF
+    gif = base64.b64decode("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7")
+    from fastapi.responses import Response
+    return Response(content=gif, media_type="image/gif",
+                    headers={"Cache-Control": "no-cache, no-store"})

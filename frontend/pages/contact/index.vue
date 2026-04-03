@@ -68,8 +68,8 @@ const contactLinks = computed(() => {
   const links = []
   if (s.contact_email || true) links.push({
     label: 'Email Support',
-    value: (s as any).contact_email || 'support@OPPLII.com',
-    href:  `mailto:${(s as any).contact_email || 'support@OPPLII.com'}`,
+    value: (s as any).contact_email || 'service@opplii.com',
+    href:  `mailto:${(s as any).contact_email || 'service@opplii.com'}`,
     icon:  'i-heroicons-envelope',
   })
   if ((s as any).contact_whatsapp) links.push({
