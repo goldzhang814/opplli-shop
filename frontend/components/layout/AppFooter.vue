@@ -11,7 +11,8 @@
             <span class="font-head font-semibold text-white text-base">OPPLII</span>
           </div>
           <p class="text-sm leading-relaxed mb-5">
-            Premium, clinically formulated skin care products for your everyday needs.
+            <!-- Premium, clinically formulated skin care products for your everyday needs.-->
+            Premium, carefully designed products for your daily living needs.
           </p>
           <!-- Social links -->
           <div class="flex gap-3">
@@ -88,7 +89,7 @@
       </div>
 
       <div class="border-t border-zinc-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p class="text-xs">© {{ new Date().getFullYear() }} OPPLII. All rights reserved.</p>
+        <p class="text-xs">© {{ new Date().getFullYear() }} Hong Kong Global Cross-border Trading Co., Limited. All rights reserved.</p>
         <div class="flex flex-wrap gap-x-5 gap-y-1 justify-center">
           <NuxtLink
             v-for="link in legalLinks"

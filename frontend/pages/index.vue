@@ -12,7 +12,7 @@
           <div class="animate-fade-up">
             <div class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 text-sm font-medium px-4 py-2 rounded-full mb-6">
               <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              Clinically Formulated
+              Expertly Formulated
             </div>
 
             <h1 class="font-head text-5xl lg:text-6xl xl:text-7xl font-bold text-zinc-900 leading-[1.05] mb-6">
@@ -123,7 +123,8 @@
       <div class="container-store">
         <div class="text-center mb-14">
           <h2 class="font-head text-4xl font-bold text-zinc-900 mb-4">Simple, effective routine</h2>
-          <p class="text-zinc-500 max-w-lg mx-auto">Three steps to healthier skin — no dermatologist visit required.</p>
+<!--          <p class="text-zinc-500 max-w-lg mx-auto">Three steps to healthier skin — no dermatologist visit required.</p>-->
+          <p class="text-zinc-500 max-w-lg mx-auto">Three simple steps to better-looking results — no specialist visit required.</p>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
           <div
@@ -172,7 +173,7 @@ const { t, locale } = useI18n()
 const auth   = useAuthStore()
 const api    = useApi()
 
-useHead({ title: 'OPPLII — Premium Skin Care' })
+useHead({ title: 'OPPLII — Featured Products' })
 
 // Products
 const { data: productsData, pending: productsLoading } = await useAsyncData(
@@ -209,14 +210,28 @@ const trustItems = computed(() => [
   { icon: 'i-heroicons-star',         label: t('home.trustBar.rating') },
 ])
 
-const trustBadges = [
+/*const trustBadges = [
   '🧪 Dermatologist Tested', '✅ FDA-Compliant', '🚚 Free US Shipping $50+',
   '💰 30-Day Return', '🌿 Clean Ingredients',
+]*/
+
+const trustBadges = [
+  '🏠 Everyday Essentials',
+  '🔒 Secure Checkout',
+  '🚚 Fast US Shipping',
+  '💰 Hassle-Free Returns',
+  '👍 Customer Approved',
 ]
 
-const steps = [
+/*const steps = [
   { emoji: '🧼', title: 'Cleanse',      desc: 'Start with a clean, dry surface for maximum absorption.' },
   { emoji: '💧', title: 'Apply',        desc: 'Apply a thin, targeted layer directly to affected area.' },
   { emoji: '✨', title: 'See Results',  desc: 'Consistent use delivers visible improvement within 7–14 days.' },
+]*/
+
+const steps = [
+  { emoji: '🛒', title: 'Choose',     desc: 'Select the product that fits your needs.' },
+  { emoji: '📦', title: 'Receive',    desc: 'Get it delivered quickly to your doorstep.' },
+  { emoji: '✨', title: 'Use',        desc: 'Start using it as part of your daily routine.' },
 ]
 </script>
