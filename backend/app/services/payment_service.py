@@ -587,7 +587,7 @@ async def process_refund(
     elif payment.provider == "paypal":
         result = await _paypal_refund(payment.provider_payment_id, refund_amount)
     elif payment.provider == "airwallex":
-        result = await _airwallex_refund(payment.provider_payment_id, refund_amount, order_id)
+        result = await _airwallex_refund(payment.provider_payment_id, refund_amount, order_id, reason)
     else:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown provider: {payment.provider}")
 
@@ -655,19 +655,43 @@ async def _paypal_refund(capture_id: str, amount: float) -> dict:
         return r.json()
 
 
-async def _airwallex_refund(payment_intent_id: str, amount: float, order_id: int) -> dict:
+async def _airwallex_refund(
+    payment_intent_id: str,
+    amount: float,
+    order_id: int,
+    reason: Optional[str] = None,
+) -> dict:
     token = await _awx_access_token()
     base  = _awx_base()
+    amount_value = float(Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+    request_body = {
+        "amount": amount_value,
+        "currency": "USD",
+        "merchant_order_id": str(order_id),
+        "request_id": str(uuid.uuid4()),
+    }
+    if reason:
+        request_body["reason"] = reason
+    # Airwallex accepts refund by payment_intent_id or payment_attempt_id.
+    if payment_intent_id.startswith("att_"):
+        request_body["payment_attempt_id"] = payment_intent_id
+    else:
+        request_body["payment_intent_id"] = payment_intent_id
+
     async with httpx.AsyncClient() as client:
         r = await client.post(
             f"{base}/api/v1/pa/refunds/create",
-            json    = {
-                "payment_intent_id": payment_intent_id,
-                "amount":            amount,
-                "currency":          "USD",
-                "merchant_order_id": str(order_id),
-            },
+            json    = request_body,
             headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
         )
-        r.raise_for_status()
+        if r.status_code >= 400:
+            try:
+                err = r.json()
+            except Exception:
+                err = {"message": r.text}
+            logger.error(
+                "airwallex refund failed status=%s payment_id=%s order_id=%s payload=%s error=%s",
+                r.status_code, payment_intent_id, order_id, request_body, err,
+            )
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Airwallex refund error: {err}")
         return r.json()
