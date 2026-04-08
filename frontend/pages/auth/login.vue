@@ -15,13 +15,13 @@
           <img src="/icons/google.svg" alt="Google" class="w-5 h-5" />
           Continue with {{ $t('auth.google') }}
         </a>
-        <a
+<!--        <a
           :href="facebookHref"
           class="flex items-center justify-center gap-3 w-full bg-[#1877F2] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#166FE5] transition-colors"
         >
           <UIcon name="i-lucide-facebook" class="w-5 h-5" />
           Continue with {{ $t('auth.facebook') }}
-        </a>
+        </a>-->
       </div>
 
       <UDivider :label="$t('auth.orContinueWith')" class="mb-5" />
