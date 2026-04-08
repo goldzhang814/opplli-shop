@@ -616,7 +616,7 @@ const steps = computed(() => [
 
 const paymentMethods: Array<{ value: 'stripe' | 'paypal' | 'airwallex'; icon: string; label: string }> = [
   // { value: 'stripe',    icon: '💳', label: 'Card' }, todo等待开放
-  { value: 'paypal',    icon: '🅿️',  label: 'PayPal' },
+  // { value: 'paypal',    icon: '🅿️',  label: 'PayPal' },todo等待开放
   { value: 'airwallex', icon: '🌐', label: 'Airwallex' },
 ]
 
