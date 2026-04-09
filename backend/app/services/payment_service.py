@@ -318,6 +318,8 @@ async def _awx_access_token() -> str:
             headers = {
                 "x-client-id": settings.AIRWALLEX_CLIENT_ID,
                 "x-api-key":   settings.AIRWALLEX_API_KEY,
+                "User-Agent":   "Mozilla/5.0",  # 加这行
+                "Content-Type": "application/json",
             },
             content=b"",  # 加这行，确保 Content-Length: 0 被发送
         )
