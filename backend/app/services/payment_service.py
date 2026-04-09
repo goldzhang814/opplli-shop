@@ -319,7 +319,19 @@ async def _awx_access_token() -> str:
                 "x-client-id": settings.AIRWALLEX_CLIENT_ID,
                 "x-api-key":   settings.AIRWALLEX_API_KEY,
             },
+            content=b"",  # 加这行，确保 Content-Length: 0 被发送
         )
+
+        if r.status_code >= 400:
+            try:
+                err = r.json()
+            except Exception:
+                err = {"message": r.text}
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Airwallex error: {err}",
+            )
+
         r.raise_for_status()
         data = r.json()
 
