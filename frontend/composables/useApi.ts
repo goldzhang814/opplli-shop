@@ -115,6 +115,9 @@ export function useApi() {
     subscribe:       (body: object)            => api('/newsletter/subscribe', { method: 'POST', body }),
     unsubscribe:     (token: string)           => api(`/newsletter/unsubscribe`, { query: { token } }),
 
+    sendVerification: (email: string)          =>api('/auth/send-verification', { method: 'POST', body: { email } }),
+    verifyCode:      (email: string, code: string)      =>api('/auth/verify-code', { method: 'POST', body: { email, code } }),
+
     // Tracking
     track:           (ref: string, event = 'visit') =>
       $fetch(`${base}/api/v1/track`, { query: { ref, event } }).catch(() => {}),

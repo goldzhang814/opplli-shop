@@ -9,6 +9,7 @@ class RegisterRequest(BaseModel):
     password:      str  = Field(min_length=8, max_length=128)
     agree_terms:   bool
     language_code: str  = "en"
+    verification_token: str
 
     @field_validator("agree_terms")
     @classmethod

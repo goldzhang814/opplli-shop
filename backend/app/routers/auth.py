@@ -33,7 +33,15 @@ from app.schemas.auth import (
 )
 from app.services import auth_service
 from app.config import settings
+from app.services import verification_service
+from pydantic import BaseModel as _BM, EmailStr as _Email
 
+class SendCodeRequest(_BM):
+    email: _Email
+
+class VerifyCodeRequest(_BM):
+    email:   _Email
+    code:    str
 
 def _safe_redirect_path(raw: Optional[str]) -> str:
     if not raw:
@@ -51,6 +59,10 @@ VERIFY_TOKEN = "opplii_fb_verify_token_9xK3LmP2"
 # ── Register ──────────────────────────────────────────────────────────────────
 @router.post("/register", response_model=TokenResponse, status_code=201)
 async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
+    # 验证 token（同时获取 email，防止前端篡改 email）
+    verified_email = verification_service.consume_verification_token(req.verification_token)
+    if verified_email != req.email:
+        return Response(content="Email mismatch. Please re-verify.",status_code=status.HTTP_400_BAD_REQUEST)
     return await auth_service.register(db, req)
 
 
@@ -342,3 +354,20 @@ async def set_default_address(
     )
     addr.is_default = True
     return {"message": "Default address updated"}
+
+@router.post("/send-verification")
+async def send_verification(
+    req: SendCodeRequest,
+    db:  AsyncSession = Depends(get_db),
+):
+    await verification_service.send_verification_code(db, req.email, purpose='register')
+    return {"message": "Verification code sent"}
+
+
+@router.post("/verify-code")
+async def verify_code(
+    req: VerifyCodeRequest,
+    db:  AsyncSession = Depends(get_db),
+):
+    token = await verification_service.verify_code(db, req.email, req.code, purpose='register')
+    return {"verification_token": token}

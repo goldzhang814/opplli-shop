@@ -33,7 +33,7 @@
         </UFormGroup>
 
         <UFormGroup :label="$t('auth.password')" :error="errors.password">
-          <UInput
+<!--          <UInput
             v-model="form.password"
             :type="showPw ? 'text' : 'password'"
             autocomplete="current-password"
@@ -48,7 +48,23 @@
                 @click="showPw = !showPw"
               />
             </template>
-          </UInput>
+          </UInput>-->
+
+          <div style="position:relative">
+  <UInput
+    v-model="form.password"
+    :type="showPw ? 'text' : 'password'"
+    autocomplete="current-password"
+    placeholder="••••••••"
+  />
+  <button
+    type="button"
+    style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;padding:0;line-height:1"
+    @click.prevent.stop="showPw = !showPw"
+  >
+    <UIcon :name="showPw ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'" style="width:18px;height:18px"/>
+  </button>
+</div>
         </UFormGroup>
 
         <div class="flex justify-end">
