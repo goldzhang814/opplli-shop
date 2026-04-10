@@ -313,6 +313,10 @@ async def _awx_access_token() -> str:
         else "https://api-demo.airwallex.com"
     )
     async with httpx.AsyncClient(proxy=settings.AIRWALLEX_PROXY or None) as client:
+        # 先测出口 IP
+        ip = await client.get("https://ifconfig.me")
+        logger.info("AWX request exit IP: %s", ip.text)
+
         r = await client.post(
             f"{base}/api/v1/authentication/login",
             headers = {
