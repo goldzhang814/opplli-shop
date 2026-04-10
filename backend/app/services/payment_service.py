@@ -312,7 +312,7 @@ async def _awx_access_token() -> str:
         if settings.AIRWALLEX_ENV == "prod"
         else "https://api-demo.airwallex.com"
     )
-    async with httpx.AsyncClient(proxy=settings.AIRWALLEX_PROXY or None) as client:
+    async with httpx.AsyncClient() as client:
         # 先测出口 IP
         ip = await client.get("https://ifconfig.me")
         logger.info("AWX request exit IP: %s", ip.text)
@@ -364,7 +364,7 @@ async def airwallex_create_payment_intent(
     request_id = str(uuid.uuid4())
     amount_value = float(Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-    async with httpx.AsyncClient(proxy=settings.AIRWALLEX_PROXY or None) as client:
+    async with httpx.AsyncClient() as client:
         r = await client.post(
             f"{base}/api/v1/pa/payment_intents/create",
             json    = {
@@ -663,7 +663,7 @@ async def _stripe_refund(payment_intent_id: str, amount: float) -> dict:
 async def _paypal_refund(capture_id: str, amount: float) -> dict:
     token = await _paypal_access_token()
     base  = _paypal_base()
-    async with httpx.AsyncClient(proxy=settings.AIRWALLEX_PROXY or None) as client:
+    async with httpx.AsyncClient() as client:
         r = await client.post(
             f"{base}/v2/payments/captures/{capture_id}/refund",
             json    = {"amount": {"currency_code": "USD", "value": f"{amount:.2f}"}},
@@ -696,7 +696,7 @@ async def _airwallex_refund(
     else:
         request_body["payment_intent_id"] = payment_intent_id
 
-    async with httpx.AsyncClient(proxy=settings.AIRWALLEX_PROXY or None) as client:
+    async with httpx.AsyncClient() as client:
         r = await client.post(
             f"{base}/api/v1/pa/refunds/create",
             json    = request_body,
