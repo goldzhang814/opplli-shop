@@ -327,6 +327,14 @@ async def _awx_access_token() -> str:
             },
             content=b"",  # 加这行，确保 Content-Length: 0 被发送
         )
+
+        logger.info(
+            "AWX auth: env=%s client_id=%s url=%s",
+            settings.AIRWALLEX_ENV,
+            settings.AIRWALLEX_CLIENT_ID,
+            f"{base}/api/v1/authentication/login"
+        )
+
         logger.error("AWX response status=%s body=%s", r.status_code, r.text)
         if r.status_code >= 400:
             try:
