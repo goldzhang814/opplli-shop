@@ -1312,6 +1312,24 @@ CREATE TABLE IF NOT EXISTS `wishlist` (
   KEY `ix_wishlist_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- auto-generated definition
+create table email_verification_codes
+(
+    id         int auto_increment
+        primary key,
+    email      varchar(191)                          not null,
+    code       varchar(6)                            not null,
+    purpose    varchar(20) default 'register'        not null,
+    is_used    tinyint(1)  default 0                 not null,
+    expires_at datetime                              not null,
+    created_at datetime    default CURRENT_TIMESTAMP not null
+);
+
+create index ix_email_verification_codes_email
+    on email_verification_codes (email);
+
+
+
 -- 正在导出表  ecom_db.wishlist 的数据：0 rows
 /*!40000 ALTER TABLE `wishlist` DISABLE KEYS */;
 /*!40000 ALTER TABLE `wishlist` ENABLE KEYS */;
