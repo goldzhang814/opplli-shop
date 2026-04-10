@@ -60,6 +60,7 @@ class Settings(BaseSettings):
     AIRWALLEX_API_KEY:        str = ""
     AIRWALLEX_WEBHOOK_SECRET: str = ""
     AIRWALLEX_ENV:            str = "demo"
+    AIRWALLEX_PROXY:          str = "http://172.17.0.1:8888"
 
     # Email
     EMAIL_PROVIDER:  str = "SMTP"
