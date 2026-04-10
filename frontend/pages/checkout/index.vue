@@ -807,11 +807,11 @@ async function mountAirwallexElements() {
   const sdk = await loadAirwallexSdk()
   if (!sdk) throw new Error('Airwallex SDK unavailable')
 
-  const awEnvRaw = String(config.public.airwallexEnv || '').trim().toLowerCase()
-  const awEnv = ['prod', 'production', 'live'].includes(awEnvRaw) ? 'prod' : 'demo'
+  //const awEnvRaw = String(config.public.airwallexEnv || '').trim().toLowerCase()
+  //const awEnv = ['prod', 'production', 'live'].includes(awEnvRaw) ? 'prod' : 'demo'
 
   await sdk.init({
-    env: awEnv,
+    env: 'prod',
     enabledElements: ['payments'],
     locale: getAirwallexLocale(),
   })
