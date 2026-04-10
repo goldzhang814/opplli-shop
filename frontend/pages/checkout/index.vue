@@ -431,7 +431,7 @@ const guestEmailError = ref('')
 const guestAuthInFlight = ref(false)
 const guestAuthEmail = ref('')
 const saveAddress   = ref(auth.isLoggedIn)
-const paymentMethod = ref<'stripe' | 'paypal' | 'airwallex'>('stripe')
+const paymentMethod = ref<'stripe' | 'paypal' | 'airwallex'>('airwallex')
 const couponCode    = ref('')
 const couponError   = ref('')
 const couponLoading = ref(false)
@@ -615,9 +615,10 @@ const steps = computed(() => [
 ])
 
 const paymentMethods: Array<{ value: 'stripe' | 'paypal' | 'airwallex'; icon: string; label: string }> = [
-  // { value: 'stripe',    icon: '💳', label: 'Card' }, todo等待开放
-  // { value: 'paypal',    icon: '🅿️',  label: 'PayPal' },todo等待开放
-  { value: 'airwallex', icon: '🌐', label: 'Airwallex' },
+  // { value: 'stripe',    icon: '💳', label: 'Card' },
+  // { value: 'paypal',    icon: '🅿️',  label: 'PayPal' },
+  // { value: 'airwallex', icon: '🌐', label: 'Airwallex' },
+  { value: 'airwallex', icon: '💳', label: 'Airwallex' },
 ]
 
 async function goToPayment() {
@@ -806,8 +807,11 @@ async function mountAirwallexElements() {
   const sdk = await loadAirwallexSdk()
   if (!sdk) throw new Error('Airwallex SDK unavailable')
 
+  const awEnvRaw = String(config.public.airwallexEnv || '').trim().toLowerCase()
+  const awEnv = ['prod', 'production', 'live'].includes(awEnvRaw) ? 'prod' : 'demo'
+
   await sdk.init({
-    env: config.public.airwallexEnv === 'prod' ? 'prod' : 'demo',
+    env: awEnv,
     enabledElements: ['payments'],
     locale: getAirwallexLocale(),
   })

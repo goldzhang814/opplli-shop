@@ -26,7 +26,7 @@ export default defineNuxtConfig({
       siteUrl:        process.env.NUXT_PUBLIC_SITE_URL  || 'http://localhost:3000',
       stripeKey:      process.env.NUXT_PUBLIC_STRIPE_KEY || '',
       airwallexKey:   process.env.NUXT_PUBLIC_AIRWALLEX_KEY || '',
-      airwallexEnv:   process.env.NUXT_PUBLIC_AIRWALLEX_ENV || 'demo',
+      airwallexEnv:   process.env.NUXT_PUBLIC_AIRWALLEX_ENV || 'prod',
     },
   },
 
